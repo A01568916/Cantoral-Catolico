@@ -232,6 +232,79 @@
     z-index: 9;
   }
 
+  /* Botón para colapsar/expandir el encabezado */
+  .header-toggle {
+    position: absolute;
+    right: 16px;
+    top: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 3px 10px;
+    font-size: 11px;
+    line-height: 1.6;
+    transition: all 0.2s;
+    z-index: 1;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .header-toggle:hover { border-color: var(--accent); color: var(--accent2); }
+
+  /* Contenido colapsable del encabezado */
+  .song-collapsible {
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(.4,0,.2,1), opacity 0.25s;
+    max-height: 200px;
+    opacity: 1;
+  }
+  .song-header.collapsed .song-collapsible {
+    max-height: 0;
+    opacity: 0;
+  }
+  .song-header.collapsed {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  /* Controles de tamaño de letra */
+  .fontsize-group {
+    display: flex;
+    align-items: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .fontsize-btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+    min-width: 40px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fontsize-btn:hover, .fontsize-btn:active { background: var(--accent); color: #fff; }
+  .fontsize-display {
+    padding: 7px 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    min-width: 36px;
+    text-align: center;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+
   .song-title {
     font-size: 26px;
     font-weight: 800;
@@ -348,12 +421,6 @@
   .capo-notice.show { display: block; }
 
   /* Song body */
-  .song-body {
-    padding: 24px 40px 60px;
-    flex: 1;
-    overflow-x: auto;
-  }
-
   /* Section label */
   .section-label {
     font-size: 11px;
@@ -373,10 +440,17 @@
     margin-bottom: 2px;
   }
 
+  .song-body {
+    padding: 24px 40px 60px;
+    flex: 1;
+    overflow-x: auto;
+    font-size: 15px; /* tamaño base; JS lo modifica */
+  }
+
   .chord-line {
     color: var(--chord);
     font-weight: 700;
-    font-size: 14px;
+    font-size: 1em;   /* hereda el tamaño del song-body */
     letter-spacing: 0.02em;
     display: block;
     white-space: pre;
@@ -384,6 +458,7 @@
 
   .lyric-line {
     color: var(--text);
+    font-size: 1em;   /* hereda el tamaño del song-body */
     display: block;
     white-space: pre;
     line-height: 1.7;
@@ -468,10 +543,10 @@
     .key-badge { font-size: 12px; padding: 4px 10px; }
     .transpose-display { min-width: 54px; font-size: 12px; }
     .transpose-btn { padding: 6px 12px; font-size: 18px; }
-    .chord-line { font-size: 13px; }
+    .chord-line { font-size: 1em; }
     .lyric-line { font-size: 14px; }
     /* Scroll horizontal para líneas largas en pantallas pequeñas */
-    .song-body { font-size: 14px; padding: 14px 14px 80px; }
+    .song-body { padding: 14px 14px 80px; }
     .capo-notice { margin: 8px 14px 0; font-size: 12px; }
     .section-label { font-size: 10px; }
     .topbar { padding: 10px 14px; }
@@ -510,18 +585,26 @@
       <div class="welcome-text">Selecciona una canción</div>
     </div>
     <div class="song-view" id="songView">
-      <div class="song-header">
-        <div class="song-title" id="viewTitle"></div>
-        <div class="song-artist" id="viewArtist"></div>
-        <div class="song-meta">
-          <div class="key-badge">Tono original: <span id="viewKey"></span></div>
-          <div class="transpose-group">
-            <button class="transpose-btn" onclick="transpose(-1)" title="Bajar semitono">−</button>
-            <div class="transpose-display" id="transposeDisplay">Original</div>
-            <button class="transpose-btn" onclick="transpose(+1)" title="Subir semitono">+</button>
+      <div class="song-header" id="songHeader">
+        <button class="header-toggle" id="headerToggle" onclick="toggleHeader()">▲ Ocultar</button>
+        <div class="song-collapsible" id="songCollapsible">
+          <div class="song-title" id="viewTitle"></div>
+          <div class="song-artist" id="viewArtist"></div>
+          <div class="song-meta">
+            <div class="key-badge">Tono: <span id="viewKey"></span></div>
+            <div class="transpose-group">
+              <button class="transpose-btn" onclick="transpose(-1)" title="Bajar semitono">−</button>
+              <div class="transpose-display" id="transposeDisplay">Original</div>
+              <button class="transpose-btn" onclick="transpose(+1)" title="Subir semitono">+</button>
+            </div>
+            <button class="reset-btn" onclick="resetTranspose()">↺ Reset</button>
+            <div class="fontsize-group">
+              <button class="fontsize-btn" onclick="changeFontSize(-1)" title="Letra más pequeña">A−</button>
+              <div class="fontsize-display" id="fontsizeDisplay">15px</div>
+              <button class="fontsize-btn" onclick="changeFontSize(+1)" title="Letra más grande">A+</button>
+            </div>
+            <button class="print-btn" onclick="window.print()">🖨 Imprimir</button>
           </div>
-          <button class="reset-btn" onclick="resetTranspose()">↺ Reset</button>
-          <button class="print-btn" onclick="window.print()">🖨 Imprimir</button>
         </div>
       </div>
       <div class="capo-notice" id="capoNotice"></div>
@@ -720,6 +803,22 @@ function showSong(idx) {
 
   // Cerrar sidebar en móvil/tablet al seleccionar canción
   if (window.innerWidth <= 768) closeSidebar();
+}
+
+// ── Colapsar/expandir encabezado de canción
+function toggleHeader() {
+  const header = document.getElementById('songHeader');
+  const btn    = document.getElementById('headerToggle');
+  const collapsed = header.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '▼ Mostrar' : '▲ Ocultar';
+}
+
+// ── Tamaño de letra
+let currentFontSize = 15;
+function changeFontSize(delta) {
+  currentFontSize = Math.min(24, Math.max(10, currentFontSize + delta));
+  document.getElementById('songBody').style.fontSize = currentFontSize + 'px';
+  document.getElementById('fontsizeDisplay').textContent = currentFontSize + 'px';
 }
 
 function transpose(delta) {
