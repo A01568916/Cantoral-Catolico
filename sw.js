@@ -3,7 +3,7 @@
 //  Estrategia: Cache First → offline total
 // ══════════════════════════════════════════════
 
-const CACHE_NAME = 'cantoral-v1';
+const CACHE_NAME = 'cantoral-v2';
 
 const ASSETS = [
   './index.html',
