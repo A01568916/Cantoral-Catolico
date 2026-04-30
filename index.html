@@ -717,6 +717,9 @@ function showSong(idx) {
 
   // Scroll main to top
   document.getElementById('mainArea').scrollTo(0, 0);
+
+  // Cerrar sidebar en móvil/tablet al seleccionar canción
+  if (window.innerWidth <= 768) closeSidebar();
 }
 
 function transpose(delta) {
@@ -2299,13 +2302,6 @@ function closeSidebar() {
   document.getElementById('sidebarOverlay').classList.remove('show');
   document.body.style.overflow = '';
 }
-// Al seleccionar canción en móvil, cerrar sidebar automáticamente
-const _origShowSong = showSong;
-function showSong(idx) {
-  _origShowSong(idx);
-  if (window.innerWidth <= 768) closeSidebar();
-}
-
 // Registrar Service Worker para modo offline (PWA)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
