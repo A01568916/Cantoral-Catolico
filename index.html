@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cantoral · RiseUp 2026</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#7c6af7"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Cantoral"/>
+<link rel="apple-touch-icon" href="icon.svg"/>
+<style>
+  /* ── Variables ── */
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #22222f;
+    --border: #2e2e42;
+    --accent: #7c6af7;
+    --accent2: #a78bfa;
+    --text: #e8e8f0;
+    --text-muted: #888899;
+    --chord: #f59e0b;
+    --chord-hover: #fbbf24;
+    --radius: 12px;
+    --font-mono: 'Courier New', Courier, monospace;
+  }
+
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .app { display: flex; height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 280px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent2);
+    letter-spacing: 0.02em;
+  }
+
+  .sidebar-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .sidebar-search {
+    margin: 12px 16px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    width: calc(100% - 32px);
+    transition: border-color 0.2s;
+  }
+  .sidebar-search:focus { border-color: var(--accent); }
+  .sidebar-search::placeholder { color: var(--text-muted); }
+
+  .song-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px 0;
+  }
+  .song-list::-webkit-scrollbar { width: 4px; }
+  .song-list::-webkit-scrollbar-track { background: transparent; }
+  .song-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .song-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .song-item:hover { background: var(--surface2); }
+  .song-item.active {
+    background: var(--surface2);
+    border-left-color: var(--accent);
+  }
+  .song-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .song-item-artist {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .main::-webkit-scrollbar { width: 6px; }
+  .main::-webkit-scrollbar-track { background: transparent; }
+  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Welcome screen */
+  .welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    gap: 12px;
+    padding: 40px;
+  }
+  .welcome-icon { font-size: 64px; opacity: 0.3; }
+  .welcome-text { font-size: 18px; font-weight: 600; color: var(--text); opacity: 0.5; }
+
+  /* Song view */
+  .song-view {
+    display: none;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  .song-view.visible { display: flex; }
+
+  .song-header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .song-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .song-artist {
+    font-size: 14px;
+    color: var(--accent2);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .song-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .key-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .key-badge span { color: var(--chord); font-weight: 700; font-size: 15px; }
+
+  .transpose-group {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .transpose-btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 6px 14px;
+    font-size: 18px;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+  }
+  .transpose-btn:hover { background: var(--accent); color: #fff; }
+
+  .transpose-display {
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--text-muted);
+    min-width: 60px;
+    text-align: center;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 12px;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+  .print-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s;
+    margin-left: auto;
+  }
+  .print-btn:hover { background: var(--accent2); }
+
+  /* Capo notice */
+  .capo-notice {
+    margin: 0 40px;
+    margin-top: 16px;
+    padding: 8px 14px;
+    background: #1e1a0e;
+    border: 1px solid #3d3010;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #f59e0b99;
+    display: none;
+  }
+  .capo-notice.show { display: block; }
+
+  /* Song body */
+  .song-body {
+    padding: 24px 40px 60px;
+    flex: 1;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-top: 32px;
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* Chord+lyric lines */
+  .song-content {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    line-height: 1;
+    white-space: pre;
+  }
+
+  .line-block {
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .chord-line {
+    color: var(--chord);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    display: block;
+    white-space: pre;
+  }
+
+  .lyric-line {
+    color: var(--text);
+    display: block;
+    white-space: pre;
+    line-height: 1.7;
+  }
+
+  .empty-line {
+    display: block;
+    height: 12px;
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+    .sidebar, .song-header .transpose-group,
+    .song-header .reset-btn,
+    .song-header .print-btn { display: none !important; }
+    .app { display: block; }
+    .main { overflow: visible; }
+    .song-view { display: flex !important; }
+    .welcome { display: none !important; }
+    .song-header {
+      position: static;
+      background: #fff;
+      border-bottom: 2px solid #000;
+      padding: 16px 24px;
+    }
+    .song-title { color: #000; font-size: 22px; }
+    .song-artist { color: #444; }
+    .key-badge { border-color: #ccc; color: #444; }
+    .key-badge span { color: #b45309; }
+    .song-body { padding: 16px 24px 32px; }
+    .section-label { color: #7c3aed; }
+    .chord-line { color: #b45309 !important; }
+    .lyric-line { color: #000 !important; }
+    .capo-notice { color: #92400e; border-color: #fbbf24; background: #fffbeb; display: block; margin: 8px 24px; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .sidebar { width: 100%; position: fixed; bottom: 0; height: auto; max-height: 50vh; top: auto; left: 0; right: 0; border-right: none; border-top: 1px solid var(--border); z-index: 100; }
+    .app { flex-direction: column; }
+    .song-header { padding: 20px 16px 16px; }
+    .song-body { padding: 16px 16px 80px; }
+    .capo-notice { margin: 0 16px; margin-top: 12px; }
+    .print-btn { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">✝ RiseUp 2026</div>
+      <div class="sidebar-sub">Regnum Christi · Cantoral</div>
+    </div>
+    <input class="sidebar-search" type="text" placeholder="Buscar canción..." id="searchInput" oninput="filterSongs(this.value)"/>
+    <div class="song-list" id="songList"></div>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main class="main" id="mainArea">
+    <div class="welcome" id="welcomeScreen">
+      <div class="welcome-icon">🎸</div>
+      <div class="welcome-text">Selecciona una canción</div>
+    </div>
+    <div class="song-view" id="songView">
+      <div class="song-header">
+        <div class="song-title" id="viewTitle"></div>
+        <div class="song-artist" id="viewArtist"></div>
+        <div class="song-meta">
+          <div class="key-badge">Tono original: <span id="viewKey"></span></div>
+          <div class="transpose-group">
+            <button class="transpose-btn" onclick="transpose(-1)" title="Bajar semitono">−</button>
+            <div class="transpose-display" id="transposeDisplay">Original</div>
+            <button class="transpose-btn" onclick="transpose(+1)" title="Subir semitono">+</button>
+          </div>
+          <button class="reset-btn" onclick="resetTranspose()">↺ Reset</button>
+          <button class="print-btn" onclick="window.print()">🖨 Imprimir</button>
+        </div>
+      </div>
+      <div class="capo-notice" id="capoNotice"></div>
+      <div class="song-body" id="songBody"></div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  TRANSPOSITION ENGINE
+// ══════════════════════════════════════════════
+
+const SHARPS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLATS  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+const ENHARMONIC = {
+  'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#',
+  'C#':'Db','D#':'Eb','F#':'Gb','G#':'Ab','A#':'Bb'
+};
+
+function noteIndex(note) {
+  let idx = SHARPS.indexOf(note);
+  if (idx === -1) idx = FLATS.indexOf(note);
+  return idx;
+}
+
+// Always use sharps
+const FLAT_KEYS = [];
+
+function transposeNote(note, semitones, preferFlats) {
+  const idx = noteIndex(note);
+  if (idx === -1) return note;
+  const newIdx = ((idx + semitones) % 12 + 12) % 12;
+  return preferFlats ? FLATS[newIdx] : SHARPS[newIdx];
+}
+
+// Matches chord symbols like: C, Cm, C#, Db, Cmaj7, C/E, G#m7, etc.
+const CHORD_RE = /\b([A-G][b#]?)((?:maj|min|m|sus|add|aug|dim|M)?[0-9]?(?:maj|min|m|sus|add|aug|dim)?[0-9]?)((?:\/[A-G][b#]?)?)\b/g;
+
+function transposeChordLine(line, semitones, preferFlats) {
+  return line.replace(CHORD_RE, (match, root, qual, bass) => {
+    const newRoot = transposeNote(root, semitones, preferFlats);
+    let newBass = bass;
+    if (bass && bass.length > 1) {
+      const bassNote = bass.slice(1);
+      newBass = '/' + transposeNote(bassNote, semitones, preferFlats);
+    }
+    return newRoot + qual + newBass;
+  });
+}
+
+function getTransposedKey(originalKey, semitones) {
+  if (!originalKey) return '';
+  const cleaned = originalKey.replace(/[()]/g,'').trim();
+  const idx = noteIndex(cleaned);
+  if (idx === -1) return originalKey;
+  const newIdx = ((idx + semitones) % 12 + 12) % 12;
+  const pref = FLAT_KEYS.includes(cleaned);
+  return pref ? FLATS[newIdx] : SHARPS[newIdx];
+}
+
+// ══════════════════════════════════════════════
+//  CHORD-LINE DETECTION
+// ══════════════════════════════════════════════
+
+function isChordLine(line) {
+  // A line is a chord line if it contains mostly chord tokens and spaces
+  const trimmed = line.trim();
+  if (!trimmed) return false;
+  // Remove all valid chord patterns and separators
+  const stripped = trimmed.replace(CHORD_RE, '').replace(/[-–,/\s|()x[\]#*.\\]+/g, '');
+  // If very little remains, it's a chord line
+  return stripped.length <= Math.max(2, trimmed.length * 0.15);
+}
+
+// ══════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════
+
+let currentSongIdx = null;
+let currentSemitones = 0;
+
+function renderSong(idx, semitones) {
+  const song = SONGS[idx];
+  document.getElementById('viewTitle').textContent = song.title;
+  document.getElementById('viewArtist').textContent = song.artist;
+  document.getElementById('viewKey').textContent = song.key || '—';
+
+  // Transpose display
+  const disp = document.getElementById('transposeDisplay');
+  if (semitones === 0) {
+    disp.textContent = 'Original';
+  } else {
+    const sign = semitones > 0 ? '+' : '';
+    const newKey = getTransposedKey(song.key, semitones);
+    disp.textContent = sign + semitones + (newKey ? ' (' + newKey + ')' : '');
+  }
+
+  // Capo
+  const capoEl = document.getElementById('capoNotice');
+  if (song.capo) {
+    capoEl.textContent = '🎸 ' + song.capo;
+    capoEl.classList.add('show');
+  } else {
+    capoEl.textContent = '';
+    capoEl.classList.remove('show');
+  }
+
+  const preferFlats = false;
+  const body = document.getElementById('songBody');
+  body.innerHTML = '';
+
+  const lines = song.content.split('\n');
+  let i = 0;
+  while (i < lines.length) {
+    const raw = lines[i];
+    const trimmed = raw.trim();
+
+    // Section label: [Verso], [Coro], etc.
+    if (/^\[.+\]$/.test(trimmed)) {
+      const lbl = document.createElement('div');
+      lbl.className = 'section-label';
+      lbl.textContent = trimmed.slice(1, -1);
+      body.appendChild(lbl);
+      i++;
+      continue;
+    }
+
+    // Empty line
+    if (!trimmed) {
+      const emp = document.createElement('span');
+      emp.className = 'empty-line';
+      body.appendChild(emp);
+      i++;
+      continue;
+    }
+
+    // Chord line: look ahead for a lyric line
+    if (isChordLine(raw)) {
+      const chordRaw = raw;
+      const lyricRaw = (i + 1 < lines.length && !isChordLine(lines[i+1]) && lines[i+1].trim() !== '' && !/^\[.+\]$/.test(lines[i+1].trim()))
+        ? lines[i+1] : null;
+
+      const chordTransposed = transposeChordLine(chordRaw, semitones, preferFlats);
+
+      const block = document.createElement('span');
+      block.className = 'line-block';
+
+      const cl = document.createElement('span');
+      cl.className = 'chord-line';
+      cl.textContent = chordTransposed;
+      block.appendChild(cl);
+
+      if (lyricRaw !== null) {
+        const ll = document.createElement('span');
+        ll.className = 'lyric-line';
+        ll.textContent = lyricRaw;
+        block.appendChild(ll);
+        i += 2;
+      } else {
+        i++;
+      }
+
+      body.appendChild(block);
+      continue;
+    }
+
+    // Plain lyric line
+    const ll = document.createElement('span');
+    ll.className = 'lyric-line';
+    ll.textContent = raw;
+    body.appendChild(ll);
+    i++;
+  }
+}
+
+function showSong(idx) {
+  currentSongIdx = idx;
+  currentSemitones = 0;
+
+  // Update sidebar active
+  document.querySelectorAll('.song-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+
+  document.getElementById('welcomeScreen').style.display = 'none';
+  const sv = document.getElementById('songView');
+  sv.classList.add('visible');
+
+  renderSong(idx, 0);
+
+  // Scroll main to top
+  document.getElementById('mainArea').scrollTo(0, 0);
+}
+
+function transpose(delta) {
+  if (currentSongIdx === null) return;
+  currentSemitones += delta;
+  renderSong(currentSongIdx, currentSemitones);
+}
+
+function resetTranspose() {
+  if (currentSongIdx === null) return;
+  currentSemitones = 0;
+  renderSong(currentSongIdx, 0);
+}
+
+// ══════════════════════════════════════════════
+//  SIDEBAR
+// ══════════════════════════════════════════════
+
+function buildSongList(filter) {
+  const list = document.getElementById('songList');
+  list.innerHTML = '';
+  SONGS.forEach((s, i) => {
+    if (filter && !s.title.toLowerCase().includes(filter.toLowerCase()) && !s.artist.toLowerCase().includes(filter.toLowerCase())) return;
+    const el = document.createElement('div');
+    el.className = 'song-item' + (i === currentSongIdx ? ' active' : '');
+    el.innerHTML = `<div class="song-item-title">${s.title}</div><div class="song-item-artist">${s.artist}</div>`;
+    el.onclick = () => showSong(i);
+    list.appendChild(el);
+  });
+}
+
+function filterSongs(val) {
+  buildSongList(val);
+}
+
+// ══════════════════════════════════════════════
+//  SONG DATA
+// ══════════════════════════════════════════════
+
+const SONGS = [
+
+// ─────────────────────────────────────────────
+{
+  title: "Noche",
+  artist: "Hakuna",
+  key: "Dm",
+  capo: "",
+  content: `[Intro]
+Dm A# F Am
+
+[Verso 1]
+       Dm                         A#
+Por tu iglesia que te espera a oscuras
+       F             Am
+Por tu pueblo que te reza aguardando la aurora
+Dm     A#    F   Am
+Te rogamos, te rogamos
+        Dm
+Por las naciones paganas,
+    A#                      F
+que tienen sed de ti sin saberlo
+       Am
+Ten piedad, ten piedad
+
+        Dm                       A#             F
+Por los pueblos oprimidos por el totalitarismo,
+          Am
+Y la opresión de la mentira
+    Dm                          A#
+Por aquellos perseguidos por tu nombre
+                    F
+Que se ocultan para orar
+                  Am
+Y aquellos extraídos de su hogar
+    Dm               A#
+Por sus perseguidores, cegados por el odio
+   F                 Am
+Perdónalos Padre, no saben lo que hacen
+ Dm
+Por los que no nos aman
+            A#
+Por los que no sabemos amar
+            F
+Por los que sufren y agonizan
+                Am
+Y hoy duermen en el hospital
+	 Dm
+Por los que hoy es su última noche
+        A#                      F
+Cuyos ojos no verán el nuevo día
+                Am
+Ten piedad, ten piedad
+    Dm                            A#
+Por todos los que sufren la tentación del suicidio,
+            F                       Am
+Por los dispuestos a dejar ganar al mal
+     Dm                   A#
+Por aquellos cuyas noches son interminables
+    F                           Am        A7 A Dm
+Y a los que la angustia les ha quitado la paz
+
+[Estribillo]
+        A#             F     Am A7
+Kyrie Eleison, Kyrie Eleison
+        Dm              A#             F     Am A7
+Kyrie Eleison, Kyrie Eleison, Kyrie Eleison
+
+[Verso 2]
+    Dm
+Por aquellos que trabajan en la prostitución
+     A#
+Y se ven obligados a vender su amor
+     F
+Por los que caen en la trampa
+   Am
+Del vicio y las drogas
+   Dm
+Por los que hoy duermen en prisión
+            A#
+Por los que hoy esperan su ejecución
+    F                   Am
+Por aquellos a los que torturan
+     Dm
+Por criminales, por los ladrones
+            A#
+Por los que erran en soledad
+            F               Am            A7 A Dm
+Por los que sufren la indiferencia de los demás
+
+[Estribillo]
+       A#              F     Am A7
+Kyrie Eleison, Kyrie Eleison
+
+[Verso 3]
+       Dm                       A#
+Por la ciudad, por todos sus habitantes
+           F                   Am
+Que en sus sueños solo existas tú
+Dm
+Por nuestros difuntos,
+         A#
+que aún no han visto tu rostro
+       F                       Am
+Por los alejados entre la multitud
+       Dm                         A#
+Por los niños que descansan en el seno de su madre
+            F                   Am
+Por las mujeres que van a dar a luz
+         Dm                      A#
+Para que reine tu paz en cada hogar
+            F                        Am A Dm
+Por los que quieren saciar su sed de amar
+
+[Estribillo]
+        A#             F     Am A7
+Kyrie Eleison, Kyrie Eleison
+        Dm              A#             F     Am A7
+Kyrie Eleison, Kyrie Eleison, Kyrie Eleison
+
+        Dm
+Ten piedad, ten piedad, ten piedad x3
+
+Ten piedad, señor, ten piedad.`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Me sostendrá",
+  artist: "Majo Solís",
+  key: "F",
+  capo: "Capo: Traste 1",
+  content: `[Intro]
+F - C - F - C
+
+[Verso 1]
+          F                         C
+El consuelo para el corazón que llora
+       F                           C
+El aliento cuando ya no queda más
+         F                        C
+La esperanza, el futuro que se acerca
+          Am           C          F
+La confianza de que todo pasará
+
+[Coro]
+      F               C
+Mi ancla firme está
+          Am                       F       G
+No temeré sé que tú conmigo estás.
+       F               C
+Me aferro a tu bondad
+            Am                      F
+Y en el dolor me recuerdas la verdad
+            G              F
+Tu amor a mi me sostendrá.
+
+F - C - F - C
+
+[Verso 2]
+       F                         C
+Tú la paz que supera entendimiento
+       F                           C
+Tú la fuerza que me vuelve a levantar
+         F                         C
+La promesa de que todo lo has vencido
+          Am             C        F
+La confianza de que todo pasará
+         Am           C         F
+La certeza de que todo volverá
+
+[Coro]
+     F             C
+Mi ancla firme está
+         Am                       F      G
+No temeré sé que tú conmigo estás
+       F               C
+Me aferro a tu bondad
+         Am                      F
+En el dolor me recuerdas la verdad
+            G              F
+Tu amor a mi me sostendrá.
+
+[Puente]
+          F                     Am
+En el valle de tinieblas vas frente de mí
+        F                         Am
+Hoy camino en la tormenta mirándote a ti
+      Am          G
+Ehh Ohh Jesús.
+
+[Coro]
+     F             C
+Mi ancla firme está
+         Am                       F      G
+No temeré sé que tú conmigo estás
+       F               C
+Me aferro a tu bondad
+         Am                      F
+En el dolor me recuerdas la verdad
+            G              F
+Tu amor a mi me sostendrá.
+     F                        C
+Tu amor, tu amor, solo tu amor
+
+  Am        G           F
+Tu amor a mí me sostendrá`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Te deseo",
+  artist: "Majo y Dan",
+  key: "E",
+  capo: "",
+  content: `[Verso 1]
+E
+Si mis tesoros han perdido todo su valor
+         A
+Y en este mundo ya no encuentro más satisfacción
+          C#m                        B
+Es porque he probado y he podido ver
+        A
+A Cristo Jesús
+
+[Verso 2]
+E
+Si todo es nada comparado a lo que hay en ti
+          A
+Lo que estimaba ya no es importante para mí
+          C#m                        B
+Es porque he probado y he podido ver
+  A
+A Cristo Jesús
+
+[Coro]
+     E
+Y Te deseo
+Más que a la vida
+   A
+Te deseo
+Más cada día
+   C#m       B
+Te deseo más todavía
+A
+Jesús
+
+[Instrumental]
+E A C#m B A
+
+[Puente]
+   E
+Tú suficiente serás,
+A                   B
+Tú suficiente serás
+C#m                   E
+Hoy y por la eternidad
+A
+Tú suficiente serás
+
+[Coro]
+     E
+Y Te deseo
+Más que a la vida
+   A
+Te deseo
+Más cada día
+   C#m       B
+Te deseo más todavía
+A
+Jesús`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Ocúpate tú de todo",
+  artist: "Hakuna",
+  key: "G",
+  capo: "Capo 3 (suena en Bb)",
+  content: `[Intro]
+D A G A D A
+
+[Verso 1]
+                     D
+Si el sudor me come vivo
+                 G
+Y me cuesta sonreír
+                  A
+Si se suman mis caídas
+                 D  D7
+A propósito sin fin
+                   G       A
+Si me arden en los ojos
+                     Bm   F#m/A
+Mil millones de porqués
+                     G
+Si me ahogan muchos pocos
+  A           D
+Ocúpate tú de todo
+
+[Verso 2]
+         A            D
+Si me aprietan los bolsillos
+                G
+Y no cabe mi reloj
+                   A
+Si prometo y no consigo
+                  D    D7
+Recordar mi vocación
+                     G           A
+Si me cambian las estrellas
+                Bm
+Por un tubo de neón
+     Em7          G
+Si parece que estoy solo
+  A           D
+Ocúpate tú de todo
+
+[Puente]
+A
+Cruces solitarias
+       Bm
+Flores artificiales
+G                      D
+Listas arrojadas al arcén
+A
+Brisas sin caminos
+    Bm
+Horizontes en clave
+    G                  A
+Naufragios sin voz ni voto
+  G     A     D      D7
+Ocúpate tú de todo
+
+           G       A            Bm   Am
+Oh, oh, oh-oh, oh, oh, oh-oh-oh-oh
+D7          G       A            D   D7
+Oh, oh, oh-oh, oh, oh, oh-oh-oh-oh
+
+                   G    A
+Si me arden en los ojos
+                    Bm
+Mil millones de porqués
+        A            G
+Si me ahogan muchos pocos
+    A         Bm
+Ocúpate tú de todo
+     A               G
+Si parece que estoy solo
+  A            D
+Ocúpate tú de todo`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Llévame a la cruz",
+  artist: "Majo y Dan",
+  key: "A",
+  capo: "",
+  content: `[Intro]
+A - F#m - D - F#m - E
+
+[Verso 1]
+A                F#m
+Si mis oraciones hablan más de mí,
+D                       F#m         E
+quiero disculparme, pues se trata de ti
+
+A                    F#m
+Si me he olvidado de lo que un día fui,
+D                       F#m          E
+vuelve a recordarme que nada soy sin ti
+
+[Coro]
+      F#m   E        D
+Ven y llévame a la cruz
+      F#m    E      D
+donde solo existes tú
+
+[Verso 2]
+A                   F#m
+Si me gano el mundo y te pierdo a ti,
+D                   F#m        E
+de nada me vale, tú eres mi vivir
+
+A               F#m
+Eres mi tesoro, eres mi existir,
+   D                  F#m           E
+yo sé que tengo todo si te tengo a ti
+
+[Coro 2]
+      F#m   E/C#     D
+Ven y llévame a la cruz
+      F#m   E/C#    D
+donde solo existes tú
+       F#m     E/C#     D
+hoy me niego a lo que soy,
+      F#m    E      D
+ven y lléname, Señor
+
+[Puente]
+        A
+Ven y llena nuestro corazón,
+       F#m
+Ven y llena nuestro corazón,
+        E                      D
+Ven y llena nuestro corazón, Jesús
+
+[Coro]
+      F#m   E        D
+Ven y llévame a la cruz
+      F#m    E      D
+donde solo existes tú`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Otra vez",
+  artist: "Un Corazón, Kim Richards, LUISFER",
+  key: "Em",
+  capo: "",
+  content: `[Intro]
+Em - C - G - D
+
+[Verso 1]
+          C              G
+No te merezco pero te necesito
+         C                       G
+En lo secreto quiero verte otra vez
+              Am7   C  D  Em
+Te escucho decir vuelve a mí
+          Am7 C  D    G       D
+Nunca me fui sigo aquí
+
+[Coro]
+   Em                C
+Jesús a tus brazos regreso
+   G                         D
+Descanso en que estás en control
+ Em                    C
+Y aún cuando no lo comprendo
+    G             D
+Confío en tu corazón
+           Em - C - G - D
+// otra vez //
+
+[Verso 2]
+           C                     G
+Y en tu presencia todo tiene sentido
+           C                       G
+Tu yugo es fácil y eres fácil de amar
+              Am7  C   D    Em
+Te escucho decir vuelve a mí
+          Am7  C  D   G     D
+Nunca me fui sigo aquí
+
+[Coro]
+   Em                C
+Jesús a tus brazos regreso
+   G                         D
+Descanso en que estás en control
+ Em                    C
+Y aún cuando no lo comprendo
+    G             D
+Confío en tu corazón
+           Em - C - G - D
+// otra vez //
+
+[Puente]
+ G                             D/F#
+Toma las piezas de mi corazón
+   Em                          D     C     D
+que puede ser una ofrenda de adoración  x4
+
+[Coro]
+   Em                C
+Jesús a tus brazos regreso
+   G                         D
+Descanso en que estás en control
+ Em                    C
+Y aún cuando no lo comprendo
+    G             D
+Confío en tu corazón
+           Em - C - G - D
+// otra vez //`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Me rindo a ti",
+  artist: "Un Corazón, Kim Richards, LUISFER",
+  key: "B",
+  capo: "",
+  content: `[Verso 1]
+B
+Oh gloriosa cruz donde en mi lugar
+Con sangre y dolor el hijo murió en soledad
+Oh sublime amor, ¿cómo comprender?
+Que Dios entregó deseando tenerme con Él
+
+[Coro]
+      E                 B                 G#m           F#
+Me rindo a ti, vengo a tus pies, todo lo que soy, todo tuyo es
+        E                B             G#m           F#
+Cristo Jesús quiero responder a tu grande amor entrego mi ser
+
+E  B  G#m  F#
+
+[Verso 2]
+B                  B4
+Oh cuán dulce paz, que llenó mi ser
+   G#m          F#/A#     B      E
+Y por su perdón me puedo acercar otra vez, otra vez
+
+[Coro]
+      E                 B                 G#m           F#
+Me rindo a ti, vengo a tus pies, todo lo que soy, todo tuyo es
+        E                B             G#m           F#
+Cristo Jesús quiero responder a tu grande amor entrego mi ser
+      E                 B                 G#m           F#
+Me rindo a ti, vengo a tus pies, todo lo que soy, todo tuyo es
+        E                B             G#m               F#
+Cristo Jesús quiero responder a tu grande amor entrego mi ser
+
+[Puente]
+      E     B           G#m      F#
+Todo mi corazón te pertenece, señor
+     E     B           G#m      F#
+Todo mi corazón te pertenece, señor
+     E      B          G#m      F#
+Y todo mi corazón te pertenece, señor
+     E      B          G#m      F#   B
+Y todo mi corazón te pertenece, señor
+
+[Coro]
+      E                 B                 G#m           F#
+Me rindo a ti, vengo a tus pies, todo lo que soy, todo tuyo es
+        E                B             G#m           F#
+Cristo Jesús quiero responder a tu grande amor entrego mi ser`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Viento fresco",
+  artist: "Hillsong Worship",
+  key: "F",
+  capo: "",
+  content: `[Intro]
+F   C   G   Am
+
+[Verso 1]
+ F        C
+Espíritu muévete
+G            Am7
+Con poder y fuego ven
+ F         C             G
+Sopla hoy con tu aliento aquí
+
+[Verso 2]
+  F         C
+Arrepentido vengo a ti
+G              Am
+Tu avivamiento enciende en mí
+ F          C            G
+Sopla Dios y haz tu llama arder
+
+[Coro]
+           F                   Am
+Un viento fresco, fragancia del cielo
+            C              G
+Ven Espíritu, ven Espíritu
+
+[Verso 3]
+ F          C
+Refina Dios mi corazón
+ G          Am
+Y purifica mi interior
+ F             C        G
+Tu fuego en mí arde con pasión
+
+[Verso 4]
+ F              C
+Tu Iglesia Dios la antorcha es
+ G             Am
+Tú la harás resplandecer
+ F            C              G
+Tu reino aquí es nuestra oración
+
+[Coro 2]
+           F                   Am
+Un viento fresco, fragancia del cielo
+            C              G
+Ven Espíritu, ven Espíritu
+        F                         Am
+Tu santa presencia del cielo desciende
+            C              G
+Ven Espíritu, ven Espíritu
+
+  F             Am
+Ven Espíritu, ven Espíritu
+ C               G
+Ven Espíritu, ven Espíritu
+  F              Am
+Ven Espíritu, ven Espíritu
+  C               G
+Ven Espíritu, ven Espíritu
+
+[Puente]
+F                   Am
+Los que Él redimió profetizarán
+C                              G
+Con tu aliento Dios sopla, sopla, sopla
+F                   Am
+En la adoración, Tú te moverás
+C                              G
+Con tu aliento Dios sopla, sopla, sopla
+
+[Coro 2]
+           F                   Am
+Un viento fresco, fragancia del cielo
+            C              G
+Ven Espíritu, ven Espíritu
+        F                         Am
+Tu santa presencia del cielo desciende
+            C              G
+Ven Espíritu, ven Espíritu`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Bendito",
+  artist: "Hakuna",
+  key: "D",
+  capo: "",
+  content: `[Coro 1]
+      D
+Bendito sea Dios
+               G
+Su santo nombre
+      D
+Bendito Jesucristo
+             G
+Dios te calme
+
+       A             G                   D
+Bendita creación que enamoró a su creador
+        A             G
+Bendito deseado
+            D
+Y deseante.
+
+[Verso]
+       D
+Bendito sea Dios
+                            G
+Su ardiente corazón
+         A                             G
+Su preciosa sangre, su presencia apasionada
+    D
+en el altar.
+
+      D
+Bendito el espíritu libre
+      G
+Y amante
+       A                       G
+Bendita la madre de Dios, José, los ángeles,
+D
+los santos
+       A                           G
+Bendito Cristo, entre nosotros
+       D
+Su familia
+
+[Puente]
+D
+Uh, uh, uh, uh, uh-uh
+          G
+Uh-uh-uh-uh
+D
+Uh, uh, uh, uh, uh-uh
+           G
+Uh-uh-uh-uh
+A   G    D
+Uh, uh, uh-uh
+A    G
+Uh, uh
+D
+Que da la vida
+
+[Final]
+      D
+Bendito sea Dios
+                G
+Que da la vida`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Me rindo",
+  artist: "Alfareros",
+  key: "Ab",
+  capo: "Capo 1 (suena en Ab)",
+  content: `[Verso]
+            G           D        Em        C
+Vengo ante ti con mi dolor sin fuerza sin voz
+          G           D          Em    C
+Y te veo ahí y solo quiero entregarte todo lo que tengo en mí
+
+[Puente]
+G         D                    Em            C
+Quiero lavar tus pies con mi llanto con mi llanto
+G         D                    Em            C
+Quiero lavar tus pies con mi llanto con mi llanto
+
+[Coro]
+     G       D        Em       C
+Me rindo me rindo me rindo me rindo a ti Sr.`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "En espíritu y verdad / Tú eres la luz",
+  artist: "",
+  key: "E",
+  capo: "",
+  content: `      E                              C#m
+Jesús, Bendito Dios fuerte, consejero prudente,
+                           A                       B
+príncipe de paz,
+                   E                             C#m
+Tú eres la luz que me ha iluminado,
+                           A                       B
+la luz que ha cegado a mi corazón,
+                    E                            C#m
+yo quiero entrar en tu presencia
+                    A                    B
+y así cara a cara poderte adorar
+                             E                       C#m
+en Espíritu y verdad,
+                A                     B
+quiero adorar quiero adorar quiero adorar.`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Dios te bendiga",
+  artist: "Música Católica",
+  key: "C",
+  capo: "",
+  content: `C                             F              C
+Que el Señor te bendiga y te guarde
+        Em                  F              G
+y su rostro resplandezca sobre ti,
+        F          G            C-Em-Am
+y de ti tenga Él misericordia;
+              F             G           C
+que el Señor te bendiga. Amén.`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Tumbas a Jardines",
+  artist: "Elevation Worship",
+  key: "B",
+  capo: "",
+  content: `[Intro]
+B  E/B  B
+
+[Verso 1]
+   E/B        B
+El mundo busqué
+     E/B      B
+Y no pudo llenarme
+        G#m               B/F#
+Ningún tesoro que pueda ganar
+         E
+Me saciará
+
+[Verso 2]
+             B
+Mas llegaste tú
+  E/B          B
+Me diste vida nueva
+        G#m           B/F#
+Y cada deseo se cumplirá
+             E
+Aquí en tu amor
+
+[Coro]
+          B
+Oh no hay nada, nada mejor
+       G#m
+No hay nada, nada mejor
+        E                      B
+No hay nada, nada mejor que mi Dios
+
+[Verso 3]
+        B
+Vengo a ti
+      E            B
+Sin miedo y sin reservas
+       G#m                B/F#
+Cada fracaso has visto Señor
+                E
+Y aún tu amigo soy
+
+[Verso 4]
+                       B
+Porque el Dios de los montes
+     C#m            B
+Es el Dios de los valles
+        G#m                  B/F#
+No hay lugar que me pueda alejar
+                 E
+De tu gracia y amor
+
+[Coro x2]
+
+[Puente 1]
+B                        E B
+Cambias lamento en danza
+                     E B
+De cenizas traes vida
+Cambias culpa por gloria
+      G#m     E       B
+Sé que solo tú lo harás
+
+[Puente 2]
+                      E B
+De las ruinas y tumbas
+                     E B
+Nacen nuevos jardines
+Resucitas los huesos
+      G#m    E       B
+Sé que solo tú lo harás
+      G#m    E       B
+Sé que solo tú lo harás
+
+[Final]
+      G#m    E        B
+Sé que solo tú lo harás`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Encontré",
+  artist: "Generación 12",
+  key: "B",
+  capo: "",
+  content: `[Intro]
+B - Emaj7 - G#m - F# - Emaj7
+
+[Verso 1]
+      B                         Emaj7
+Encontré agua que da vida, encontré
+                       G#m
+Agua que da vida, encontré
+           F#               Emaj7
+Es un manantial que sacia mi alma
+
+      B                    Emaj7
+Encontré pan de vida, encontré
+                 G#m
+Pan de vida encontré
+     F#       Emaj7
+Y jamás seré igual
+
+[Coro]
+      B            G#m
+Jesucristo, hoy me rindo
+                F#
+Solo tengo este corazón
+             Emaj7
+Para darte mi adoración
+
+      B             G#m
+Jesucristo, yo me inclino
+                  F#
+Cuán hermoso eres Tú, Señor
+                 Emaj7
+Cuán hermoso eres Tú, Señor
+
+[Verso 2]
+      B
+Encontré a Jesús,
+                    Emaj7
+mi buen pastor encontré
+                              G#m
+A Jesús, mi buen pastor, encontré
+       F#              Emaj7
+Él me cuida y me da descanso
+
+       B                             Emaj7
+Encontré, paz que no se puede comprender
+                           G#m
+Paz que no se puede comprender
+   F#              Emaj7
+Y ahora mi alma te canta
+
+[Coro]
+
+[Puente]
+           E            F#
+Cuán grande es Tu amor
+         G#m
+Nada me falta
+          B
+Nada me falta
+
+[Coro]
+
+[Verso 3]
+      B                           Emaj7
+Encontré aquel que Su sangre derramó
+                       G#m
+Y con Sus heridas me sanó
+      F#             Emaj7
+Encontré a Cristo, mi Salvador
+
+       B                                   Emaj7
+Puedo ver las marcas en Sus manos y en Sus pies
+                               G#m
+El amor del Cielo demostrado en Él
+      F#             Emaj7
+Oh Jesús, cordero de Dios.
+
+[Coro Final]`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Todo",
+  artist: "Hakuna",
+  key: "A",
+  capo: "",
+  content: `[Intro]
+A
+
+[Verso]
+A                                         Bm
+Padre, pon tu Espíritu sobre mí
+           D
+Aquí estoy, aquí me tienes
+E
+Gracias por la vida
+             A   E         F#m
+Que la viva siendo todo yo
+            Bm              E
+Que la viva siendo todo yo
+            A
+Todo libre, todo entregado
+
+Todo Tú, todo dado
+          C#m
+Todo alegre, todo amante
+          C#m7
+Todo amado
+Todo arrodillado
+
+Todo hijo, todo hermano
+                              D
+Todo padre, todo disfruto
+             E          D
+Todo mariano, todos por todos
+C#m             E
+Que viva todo
+                  A
+Con toda el alma`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Abres camino",
+  artist: "Rojo, Joel Contreras",
+  key: "Eb",
+  capo: "",
+  content: `[Intro]
+Eb - Bb - F - Gm
+
+[Verso]
+        Eb              Bb
+Aquí estás, te vemos mover
+       F           Gm
+Te adoraré, te adoraré
+      Eb             Bb
+Aquí estás obrando en mí
+       F           Gm
+Te adoraré, te adoraré
+
+[Coro]
+Eb
+Milagroso, abres camino
+Bb
+Cumples promesas
+               F
+Luz en tinieblas
+                 Gm
+Mi Dios, así eres Tú
+
+      Eb                 Bb
+Aquí estás sanando mi corazón
+       F           Gm
+Te adoraré, te adoraré
+      Eb                 Bb
+Aquí estás tocando mi corazón
+       F           Gm
+Te adoraré, te adoraré.
+
+[Puente]
+ Eb
+Aunque no pueda ver, estás obrando
+Bb
+Aunque no pueda ver, estás obrando
+F
+Siempre estás, siempre estás obrando
+Gm              F
+Siempre estás, siempre estás obrando`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Hay poder",
+  artist: "Generación 12",
+  key: "B",
+  capo: "",
+  content: `[Intro]
+G#m B E G#m
+
+[Verso]
+G#m            E
+Soy redimido y mis pecados
+B                   F#
+Tú llevaste en esa cruz
+G#m           E
+Hoy nos postramos, ante el Cordero
+B                        F#
+Que nos santificó
+
+[Coro]
+E           C#m
+Hay poder, hay poder
+                B
+En tu sangre, Jesús,
+                   F#                    E
+Las cadenas rotas son y la enfermedad llevó
+                C#m
+Hay poder, hay poder
+                B
+En tu sangre, Jesús,
+             F#                  E
+Todo ciego verá y todos confesarán
+
+[Puente]
+C#m           G#m         B          F#
+Mi Cristo, Cordero, tu sangre me salvó.`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Babel",
+  artist: "Un Corazón",
+  key: "D",
+  capo: "",
+  content: `[Verso 1]
+          G             Bm           A
+¿En qué momento es que perdimos el camino?
+           G             Bm           A
+¿En qué momento es que dejamos de escuchar?
+           G            Bm            A
+¿En qué momento el corazón se volvió frío?
+
+          Em    D      A
+Oh Padre nuestro, perdón
+          Em    D      A
+Oh Padre nuestro, perdón
+
+[Coro]
+         G        A   Bm
+Pedimos gracia y misericordia
+        A     D           A
+Que tu reino venga, intervén
+ F#m       G         A   Bm
+En ti hay gracia y misericordia
+       A    D           A          G  Bm  A
+Hoy los redimidos dicen ven, Cristo ven
+
+[Verso 2]
+          G             Bm           A
+¿En qué momento es que olvidamos al herido?
+           G             Bm           A
+¿En qué momento es que empezamos a juzgar?
+           G             Bm           A
+¿En qué momento construimos nuestro reino?
+
+          Em    D      A
+Oh Padre nuestro, perdón
+          Em    D      A
+Oh Padre nuestro, perdón
+
+[Coro]
+         G        A   Bm
+Pedimos gracia y misericordia
+        A     D           A
+Que tu reino venga, intervén
+ F#m       G         A   Bm
+En ti hay gracia y misericordia
+       A    D           A          G  Bm  A
+Hoy los redimidos dicen ven, Cristo ven
+
+[Puente]
+G                     Bm
+Un mover, un despertar cuando llenas
+A               G              D  A
+El lugar hay libertad (amén, amén)
+G                     Bm
+Un mover, un despertar cuando tomas
+A                 G  D  A
+Tu lugar hay sanidad
+
+[Coro]
+         G        A   Bm
+Pedimos gracia y misericordia
+        A     D           A
+Que tu reino venga, intervén
+ F#m       G         A   Bm
+En ti hay gracia y misericordia
+       A    D           A          G  Bm  A
+Hoy los redimidos dicen ven, Cristo ven`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "1000 Pedazos",
+  artist: "Un Corazón",
+  key: "D",
+  capo: "",
+  content: `[Intro]
+Bm  G  D  A
+
+[Verso 1]
+         Bm               G
+A veces das y a veces quitas
+         D           A
+Tu voluntad puede doler
+     Bm            G         D  A
+Pero sé que todo obra para bien
+         Bm              G
+El mundo quita y no perdona
+          D            A
+Y soy culpable yo también
+             Bm            G           D   A
+¿Cómo es que todo sigue obrando para bien?
+
+[Pre-Coro]
+   G         A       Bm           A/C#    D
+Y sí, no es fácil seguir, pero un día te oí
+A4       D
+Me llamaste
+G       A       Bm       A          D
+Y lo difícil sería no estar junto a ti
+
+[Coro]
+D          A            Bm                G
+Tu bondad nunca me abandona, nunca decepciona
+D          A               Bm                     G
+Tu verdad siempre me ha cuidado, aún cuando he dudado
+        G            A           D        A    Bm
+Y si estoy en mil pedazos es porque no es el final
+      G            A          D     A     Bm
+Alma mía en mil pedazos nunca dejes de adorar
+      G          A           Bm
+Alma mía, nunca dejes de adorar
+
+[Verso 2]
+       Bm           G               D           A
+Un día más en el desierto donde me hablas en silencio
+       Bm           G           D    A
+Y me recuerdas todo obra para bien
+
+[Pre-Coro]
+   G         A       Bm           A/C#    D
+Y sí, no es fácil seguir, pero un día te oí
+A4       D
+Me llamaste
+G       A       Bm       A          D
+Y lo difícil sería no estar junto a ti
+
+[Coro]
+D          A            Bm                G
+Tu bondad nunca me abandona, nunca decepciona
+D          A               Bm                     G
+Tu verdad siempre me ha cuidado, aún cuando he dudado
+        G            A           D        A    Bm
+Y si estoy en mil pedazos es porque no es el final
+      G            A          D     A     Bm
+Alma mía en mil pedazos nunca dejes de adorar
+      G          A           Bm
+Alma mía, nunca dejes de adorar`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Salmo 23",
+  artist: "Un Corazón",
+  key: "C",
+  capo: "",
+  content: `[Verso 1]
+      C                          F
+Tengo todo, eres todo lo que necesito
+        C                                F
+Tú me llevas al lugar donde encontré descanso
+G                             Am        F
+Renuevas mis fuerzas, tú guías mis pasos
+G                             Am        F - G
+Renuevas mis fuerzas, tú guías mis pasos
+
+[Coro]
+     Am            F
+Tu amor inagotable es
+                C             Em
+Tu bondad me persigue, te persigo
+      Am                   F
+En tu mesa me diste un lugar
+               C          Em
+Me recibes en casa para siempre
+
+[Verso 2]
+        C                            F
+En tus brazos cada miedo y temor se apagan
+         C                               F
+Tú me enseñas a confiar cuando mi fe desmaya
+G                             Am        F
+Renuevas mis fuerzas, tú guías mis pasos
+G                             Am        F
+Renuevas mis fuerzas, tú guías mis pasos
+
+[Coro]
+     Am            F
+Tu amor inagotable es
+                C             Em
+Tu bondad me persigue, te persigo
+      Am                  F
+En tu mesa me diste un lugar
+               C          Em
+Me recibes en casa para siempre
+
+[Puente]
+       F           G            Am               Em
+Aunque pase por el valle de las sombra y muerte
+       F          G         Am           Em
+Ya no temo, yo confío, Tú estás conmigo
+      F           G           Am           Em
+Y si caigo o me pierdo, vienes a buscarme
+        F             G            Am            Em
+No me olvidas y me encuentras y nunca te rindes
+
+[Coro]
+     Am            F
+Tu amor inagotable es
+                C             Em
+Tu bondad me persigue, te persigo
+      Am                  F
+En tu mesa me diste un lugar
+               C          Em
+Me recibes en casa para siempre`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Jesucristo Basta",
+  artist: "Un Corazón",
+  key: "Ab",
+  capo: "Capo 1 (forma en G, suena en Ab)",
+  content: `[Intro]
+Em7  C9  G
+
+[Primera Parte]
+Em7           C9  G
+Nuestros corazones
+Em7      C9     G  G9
+Insaciables son
+Em7         C9   G
+Hasta que conocen
+      D2   Em7  C9  G  D2
+A su Salvador
+
+[Pre-Coro]
+ C9                    Em7  D4  D
+Tal y como somos nos amó
+ C9                      Em7  D5
+Hoy nos acercamos sin temor
+
+[Coro]
+G        D              Em7
+Él es el agua que al beber
+       C9            G
+Nunca más tendremos sed
+      D        Em7
+Jesucristo basta
+      C9       G
+Jesucristo basta
+
+       D         Em7
+Mi castigo recibió
+        C9             G
+Y su herencia me entregó
+      D        Em7
+Jesucristo basta
+      C9       Em7  D2  C9
+Jesucristo basta
+
+[Segunda Parte]
+Em7        C9    G
+Fuimos alcanzados
+Em7          C9   G
+Por su gran amor
+Em7         C9    G
+Con brazos abiertos
+       D    Em7  C9  G  D5
+Nos recibe hoy
+
+[Pre-Coro]
+ C9                    Em7  D4  D
+Tal y como somos nos amó
+ C9                      Em7  D5
+Hoy nos acercamos sin temor
+
+[Coro]
+G        D              Em7
+Él es el agua que al beber
+       C9            G
+Nunca más tendremos sed
+      D        Em7
+Jesucristo basta
+      C9       G
+Jesucristo basta
+
+       D         Em7
+Mi castigo recibió
+        C9             G
+Y su herencia me entregó
+      D        Em7
+Jesucristo basta
+      C9       Em7  D2  C9
+Jesucristo basta
+
+[Tercera Parte]
+Em7           C9    G   G9
+Ahora hay un futuro
+Em7        C9     G   G9
+Y esperanza fiel
+Em7         C9      G
+En su amor confiamos
+        D       G
+Hay descanso en Él`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Vasijas Rotas",
+  artist: "Hillsong Worship",
+  key: "G",
+  capo: "",
+  content: `[Intro]
+Em  G
+
+[Verso 1]
+Em         C             Em
+Mi alma estaba rota y herida
+          C           Em
+Pero tu gracia la restauró
+         C             G
+Manos vacías que tú llenaste
+              D
+Soy libre en ti
+             Em    D
+Soy libre en ti
+
+[Pre-Coro]
+    G           D
+Sublime gracia del Señor
+         Em          C
+Que a un pecador salvó
+      G            D
+Fui ciego mas hoy veo yo
+   Em               C
+Perdido y Él me halló
+
+[Coro]
+             G              D
+Ahora puedo ver
+                 Em        C
+Oh puedo ver sus ojos de amor
+             G              D
+Quebrantado fue
+             Em       C
+Para darnos su salvación
+
+[Verso 2]
+          Em                G
+Tú no me juzgas por mis fracasos
+         Em             G
+Tú me aceptas tal como soy
+        Em           G
+Toma mi vida como vasija
+       D                Em     D
+Para mostrar tu gloria en mí
+
+[Pre-Coro]
+    C           D
+Sublime gracia del Señor
+         Em          C
+Que a un pecador salvó
+      G            D
+Fui ciego mas hoy veo yo
+   Em               C
+Perdido y Él me halló
+
+[Coro]
+             G              D
+Ahora puedo ver
+                 Em        C
+Oh puedo ver sus ojos de amor
+             G              D
+Quebrantado fue
+             Em       C
+Para darnos su salvación
+
+[Pre-Coro]
+    G           D
+Sublime gracia del Señor
+         Em          C
+Que a un pecador salvó
+      G            D
+Fui ciego mas hoy veo yo
+   Em               C
+Perdido y Él me halló
+
+[Coro Final]
+             G              D
+Ahora puedo ver
+                 Em        C
+Oh puedo ver sus ojos de amor
+             G              D
+Quebrantado fue
+             Em       C
+Para darnos su salvación`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "La bendición",
+  artist: "Elevation Worship",
+  key: "A",
+  capo: "",
+  content: `[Verso]
+A                 D
+Dios te guarde y bendiga
+A                 E                    F#m
+Que extienda su amor y te muestre favor
+    D           A            E    A     D
+Dios te mire con agrado y te dé paz
+A              D
+Dios te guarde y bendiga
+    A                  E                F#m
+Que extienda su amor y te muestre favor
+     D           A            E    A
+Dios te mire con agrado y te dé paz
+
+[Coro]
+F#m  D     A      E
+Amén, amén, amén
+
+[Puente 1]
+          F#m                           D
+Que te cubra con su gracia hasta mil generaciones
+        A                        E
+Tu familia y tus hijos y los hijos de tus hijos
+
+[Puente 2]
+         F#m                             D
+Su presencia te acompañe donde quiera que tú vayas
+           A                           E
+Que te llene, te rodee va contigo, va contigo
+        F#m                            D
+De mañana y de noche, en tu entrada y salida
+          A                       E
+En tu llanto y alegría él te ama, él te ama
+
+ F#m     D           A           E
+Él te ama, él te ama, él te ama, él te ama
+
+[Coro]
+F#m  D     A      E
+Amén, amén, amén`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Gloria",
+  artist: "Martín Valverde",
+  key: "Dm",
+  capo: "",
+  content: `[Estribillo]
+Dm     Dm/C  Bb A Dm
+Gloria,      Gloria,
+Dm     Dm/C  Bb A Dm D7
+Gloria,      Gloria,
+
+     Gm      C
+a Jesús el Señor,
+    F          Dm
+al Cordero de Dios.
+    Gm           A9   Dm    D7
+Al nombre sobre todo nombre.
+
+     Gm      C
+a Jesús el Señor,
+    F           Dm
+al Cordero de Dios.
+    Gm           A9   Dm
+Al nombre sobre todo nombre.`
+},
+
+]; // END SONGS
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+buildSongList();
+
+// Registrar Service Worker para modo offline (PWA)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registrado:', reg.scope))
+      .catch(err => console.warn('SW error:', err));
+  });
+}
+</script>
+</body>
+</html>

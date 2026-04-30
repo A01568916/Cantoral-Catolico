@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fondo maskable con safe zone al centro -->
+  <rect width="512" height="512" fill="#7c6af7"/>
+  <!-- Cruz centrada en safe zone (radio ~40%) -->
+  <rect x="224" y="100" width="64" height="200" rx="14" fill="#ffffff"/>
+  <rect x="136" y="176" width="240" height="64" rx="14" fill="#ffffff"/>
+  <!-- Nota musical -->
+  <circle cx="330" cy="360" r="26" fill="#f59e0b"/>
+  <rect x="354" y="278" width="14" height="88" rx="7" fill="#f59e0b"/>
+</svg>

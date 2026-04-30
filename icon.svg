@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fondo -->
+  <rect width="512" height="512" rx="80" fill="#0f0f13"/>
+  <!-- Cruz -->
+  <rect x="224" y="80" width="64" height="220" rx="16" fill="#7c6af7"/>
+  <rect x="120" y="160" width="272" height="64" rx="16" fill="#7c6af7"/>
+  <!-- Nota musical pequeña decorativa -->
+  <circle cx="340" cy="370" r="30" fill="#f59e0b"/>
+  <rect x="368" y="280" width="16" height="98" rx="8" fill="#f59e0b"/>
+  <rect x="316" y="390" width="72" height="20" rx="6" fill="#f59e0b" opacity="0.5"/>
+</svg>
