@@ -261,10 +261,9 @@
     flex: 1;
     min-width: 0;
     overflow: hidden;
-    transition: max-height 0.3s cubic-bezier(.4,0,.2,1), opacity 0.25s;
-    max-height: 300px;
+    transition: max-height 0.4s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+    max-height: 600px;
     opacity: 1;
-  }
   }
   .song-header.collapsed .song-collapsible {
     max-height: 0;
@@ -816,8 +815,31 @@ function showSong(idx) {
 function toggleHeader() {
   const header = document.getElementById('songHeader');
   const btn    = document.getElementById('headerToggle');
-  const collapsed = header.classList.toggle('collapsed');
-  btn.textContent = collapsed ? '▼ Mostrar' : '▲ Ocultar';
+  const collapsible = document.getElementById('songCollapsible');
+  const isCollapsed = header.classList.contains('collapsed');
+
+  if (isCollapsed) {
+    // Expandir: primero fijamos max-height al scrollHeight real
+    header.classList.remove('collapsed');
+    collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
+    btn.textContent = '▲ Ocultar';
+    // Tras la transición, quitamos el valor inline para que sea fluido si cambia el contenido
+    collapsible.addEventListener('transitionend', function onEnd() {
+      collapsible.style.maxHeight = '';
+      collapsible.removeEventListener('transitionend', onEnd);
+    });
+  } else {
+    // Colapsar: fijamos primero el valor actual, luego lo llevamos a 0
+    collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
+    // Forzar repaint antes de cambiar a 0
+    collapsible.getBoundingClientRect();
+    collapsible.style.maxHeight = '0px';
+    header.classList.add('collapsed');
+    btn.textContent = '▼ Mostrar';
+    collapsible.addEventListener('transitionend', function onEnd() {
+      collapsible.removeEventListener('transitionend', onEnd);
+    });
+  }
 }
 
 // ── Tamaño de letra
