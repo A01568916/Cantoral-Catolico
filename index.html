@@ -475,6 +475,307 @@
     height: 12px;
   }
 
+  /* ── View selector (Todas / Mis listas) ── */
+  .view-selector {
+    display: flex;
+    margin: 10px 14px 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .view-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 0;
+    transition: background 0.18s, color 0.18s;
+  }
+  .view-tab.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .view-tab:not(.active):hover { color: var(--text); }
+
+  /* ── Playlist toolbar ── */
+  .pl-toolbar {
+    padding: 10px 14px 6px;
+    flex-shrink: 0;
+  }
+  .pl-new-btn {
+    width: 100%;
+    background: none;
+    border: 1.5px dashed var(--border);
+    border-radius: 9px;
+    color: var(--accent2);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 0;
+    transition: border-color 0.18s, background 0.18s;
+    letter-spacing: 0.01em;
+  }
+  .pl-new-btn:hover { border-color: var(--accent); background: var(--surface2); }
+
+  /* Selector de lista activa */
+  .pl-selector-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px 8px;
+    flex-shrink: 0;
+  }
+  .pl-select {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 10px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.18s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888899' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+  .pl-select:focus { border-color: var(--accent); }
+  .pl-delete-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 15px;
+    padding: 6px 9px;
+    transition: border-color 0.18s, color 0.18s;
+    line-height: 1;
+    min-height: 36px;
+  }
+  .pl-delete-btn:hover { border-color: #ef4444; color: #ef4444; }
+
+  /* Empty state */
+  .pl-empty {
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  /* ── Song item en playlist (con flechas y botón quitar) ── */
+  .song-item-pl {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 6px 10px 6px 14px;
+    border-left: 3px solid transparent;
+    transition: background 0.15s;
+  }
+  .song-item-pl:hover { background: var(--surface2); }
+  .song-item-pl.active { background: var(--surface2); border-left-color: var(--accent); }
+
+  .song-item-pl-info {
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    padding: 5px 0;
+  }
+
+  /* Flechas de orden */
+  .pl-arrows {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+    margin-right: 4px;
+  }
+  .pl-arrow {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 28px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .pl-arrow:hover:not(:disabled) {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .pl-arrow:disabled { opacity: 0.2; cursor: default; }
+
+  /* Botón quitar de lista */
+  .pl-remove-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+    margin-left: 2px;
+    line-height: 1;
+  }
+  .pl-remove-btn:hover {
+    background: #2d1515;
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  /* Botón "Agregar a lista" en cada canción del panel Todas */
+  .song-item-add-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .song-item:hover .song-item-add-btn,
+  .song-item-add-btn:focus { opacity: 1; }
+  .song-item-add-btn:hover {
+    background: var(--surface2);
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
+
+  /* Ajustar song-item para acomodar el botón */
+  .song-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .song-item-info { flex: 1; min-width: 0; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.show { display: block; }
+  .modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    z-index: 201;
+    width: min(340px, calc(100vw - 32px));
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    transition: transform 0.2s, opacity 0.2s;
+    opacity: 0;
+  }
+  .modal.show {
+    display: block;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  .modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin-bottom: 6px;
+  }
+  .modal-song-name {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .modal-pl-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .modal-pl-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .modal-pl-item:hover { border-color: var(--accent); background: #1f1f2e; }
+  .modal-pl-item.already-in {
+    border-color: var(--accent);
+    color: var(--accent2);
+    cursor: default;
+  }
+  .modal-pl-item.already-in:hover { background: var(--surface2); }
+  .modal-pl-badge {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .modal-pl-item.already-in .modal-pl-badge { color: var(--accent); }
+  .modal-no-lists {
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 12px 0;
+  }
+  .modal-close {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 10px;
+    transition: border-color 0.15s;
+  }
+  .modal-close:hover { border-color: var(--accent); color: var(--text); }
+
   /* ── Print ── */
   @media print {
     body { background: #fff !important; color: #000 !important; }
@@ -575,9 +876,41 @@
       </div>
       <button class="sidebar-close" onclick="closeSidebar()" aria-label="Cerrar menú">✕</button>
     </div>
-    <input class="sidebar-search" type="text" placeholder="Buscar canción..." id="searchInput" oninput="filterSongs(this.value)"/>
-    <div class="song-list" id="songList"></div>
+
+    <!-- Selector de vista -->
+    <div class="view-selector">
+      <button class="view-tab active" id="tabAll" onclick="switchView('all')">Todas</button>
+      <button class="view-tab" id="tabPlaylists" onclick="switchView('playlists')">Mis listas</button>
+    </div>
+
+    <!-- Panel: todas las canciones -->
+    <div id="panelAll" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
+      <input class="sidebar-search" type="text" placeholder="Buscar canción..." id="searchInput" oninput="filterSongs(this.value)"/>
+      <div class="song-list" id="songList"></div>
+    </div>
+
+    <!-- Panel: listas -->
+    <div id="panelPlaylists" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
+      <div class="pl-toolbar">
+        <button class="pl-new-btn" onclick="createPlaylist()">＋ Nueva lista</button>
+      </div>
+      <div class="pl-selector-wrap" id="plSelectorWrap" style="display:none;">
+        <select class="pl-select" id="plSelect" onchange="selectPlaylist(this.value)"></select>
+        <button class="pl-delete-btn" onclick="deletePlaylist()" title="Eliminar lista">🗑</button>
+      </div>
+      <div class="song-list" id="playlistSongList"></div>
+      <div class="pl-empty" id="plEmpty" style="display:none;">No tienes listas aún.<br>Crea una con el botón de arriba.</div>
+    </div>
   </nav>
+
+  <!-- Modal: agregar canción a lista -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+  <div class="modal" id="addToListModal">
+    <div class="modal-title">Agregar a lista</div>
+    <div class="modal-song-name" id="modalSongName"></div>
+    <div class="modal-pl-list" id="modalPlList"></div>
+    <button class="modal-close" onclick="closeModal()">Cancelar</button>
+  </div>
 
   <!-- ── MAIN ── -->
   <main class="main" id="mainArea">
@@ -793,10 +1126,13 @@ function showSong(idx) {
   currentSongIdx = idx;
   currentSemitones = 0;
 
-  // Update sidebar active
-  document.querySelectorAll('.song-item').forEach((el, i) => {
-    el.classList.toggle('active', i === idx);
-  });
+  // Refrescar lista activa según la vista actual
+  if (currentView === 'all') {
+    buildSongList(document.getElementById('searchInput').value);
+  } else {
+    const pls = loadPlaylists();
+    if (pls[activePlIdx]) renderPlaylistSongs(pls[activePlIdx]);
+  }
 
   document.getElementById('welcomeScreen').style.display = 'none';
   const sv = document.getElementById('songView');
@@ -863,14 +1199,13 @@ function resetTranspose() {
 }
 
 // ══════════════════════════════════════════════
-//  SIDEBAR
+//  SIDEBAR — TODAS LAS CANCIONES
 // ══════════════════════════════════════════════
 
 function buildSongList(filter) {
   const list = document.getElementById('songList');
   list.innerHTML = '';
 
-  // Crear índices ordenados alfabéticamente (no modifica el array original)
   const sorted = SONGS
     .map((s, i) => ({ s, i }))
     .filter(({ s }) => !filter ||
@@ -887,14 +1222,276 @@ function buildSongList(filter) {
   sorted.forEach(({ s, i }) => {
     const el = document.createElement('div');
     el.className = 'song-item' + (i === currentSongIdx ? ' active' : '');
-    el.innerHTML = `<div class="song-item-title">${s.title}</div><div class="song-item-artist">${s.artist}</div>`;
-    el.onclick = () => showSong(i);
+    el.innerHTML = `
+      <div class="song-item-info" onclick="showSong(${i})">
+        <div class="song-item-title">${s.title}</div>
+        <div class="song-item-artist">${s.artist}</div>
+      </div>
+      <button class="song-item-add-btn" onclick="openAddToListModal(${i})" title="Agregar a lista">＋</button>
+    `;
     list.appendChild(el);
   });
 }
 
 function filterSongs(val) {
   buildSongList(val);
+}
+
+// ══════════════════════════════════════════════
+//  VISTA — TODAS / MIS LISTAS
+// ══════════════════════════════════════════════
+
+let currentView = 'all';
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById('panelAll').style.display       = view === 'all'       ? 'flex' : 'none';
+  document.getElementById('panelPlaylists').style.display = view === 'playlists' ? 'flex' : 'none';
+  document.getElementById('tabAll').classList.toggle('active',       view === 'all');
+  document.getElementById('tabPlaylists').classList.toggle('active', view === 'playlists');
+  if (view === 'playlists') renderPlaylistPanel();
+}
+
+// ══════════════════════════════════════════════
+//  PLAYLISTS — DATOS (localStorage)
+// ══════════════════════════════════════════════
+
+function loadPlaylists() {
+  try { return JSON.parse(localStorage.getItem('cantoral_playlists') || '[]'); }
+  catch { return []; }
+}
+function savePlaylists(pls) {
+  localStorage.setItem('cantoral_playlists', JSON.stringify(pls));
+}
+
+let activePlIdx = 0; // índice de la lista activa en el panel
+
+// ══════════════════════════════════════════════
+//  PLAYLISTS — PANEL
+// ══════════════════════════════════════════════
+
+function renderPlaylistPanel() {
+  const pls = loadPlaylists();
+  const wrap   = document.getElementById('plSelectorWrap');
+  const empty  = document.getElementById('plEmpty');
+  const select = document.getElementById('plSelect');
+
+  if (pls.length === 0) {
+    wrap.style.display  = 'none';
+    empty.style.display = 'block';
+    document.getElementById('playlistSongList').innerHTML = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+  wrap.style.display  = 'flex';
+
+  // Poblar select
+  if (activePlIdx >= pls.length) activePlIdx = pls.length - 1;
+  select.innerHTML = pls.map((p, i) =>
+    `<option value="${i}" ${i === activePlIdx ? 'selected' : ''}>${p.name}</option>`
+  ).join('');
+
+  renderPlaylistSongs(pls[activePlIdx]);
+}
+
+function renderPlaylistSongs(pl) {
+  const list = document.getElementById('playlistSongList');
+  list.innerHTML = '';
+
+  if (!pl || pl.songs.length === 0) {
+    list.innerHTML = `<div class="pl-empty" style="display:block;">Esta lista está vacía.<br>Agrega canciones desde "Todas".</div>`;
+    return;
+  }
+
+  pl.songs.forEach((songIdx, pos) => {
+    const s = SONGS[songIdx];
+    if (!s) return;
+    const isFirst = pos === 0;
+    const isLast  = pos === pl.songs.length - 1;
+
+    const el = document.createElement('div');
+    el.className = 'song-item-pl' + (songIdx === currentSongIdx ? ' active' : '');
+    el.innerHTML = `
+      <div class="pl-arrows">
+        <button class="pl-arrow" onclick="moveSong(${pos}, -1)" ${isFirst ? 'disabled' : ''} title="Subir">▲</button>
+        <button class="pl-arrow" onclick="moveSong(${pos},  1)" ${isLast  ? 'disabled' : ''} title="Bajar">▼</button>
+      </div>
+      <div class="song-item-pl-info" onclick="showSong(${songIdx})">
+        <div class="song-item-title">${s.title}</div>
+        <div class="song-item-artist">${s.artist}</div>
+      </div>
+      <button class="pl-remove-btn" onclick="removeSongFromPlaylist(${pos})" title="Quitar de la lista">✕</button>
+    `;
+    list.appendChild(el);
+  });
+}
+
+function selectPlaylist(val) {
+  activePlIdx = parseInt(val);
+  const pls = loadPlaylists();
+  renderPlaylistSongs(pls[activePlIdx]);
+}
+
+// ══════════════════════════════════════════════
+//  PLAYLISTS — ACCIONES
+// ══════════════════════════════════════════════
+
+function createPlaylist() {
+  // Mostrar input inline en lugar de prompt()
+  const toolbar = document.querySelector('.pl-toolbar');
+  if (document.getElementById('plNewInput')) return; // ya abierto
+
+  toolbar.innerHTML = `
+    <div style="display:flex;gap:6px;align-items:center;">
+      <input id="plNewInput" type="text" placeholder="Nombre de la lista..."
+        style="flex:1;background:var(--surface2);border:1.5px solid var(--accent);border-radius:8px;
+               color:var(--text);font-size:13px;padding:8px 10px;outline:none;min-width:0;"
+        onkeydown="if(event.key==='Enter')confirmNewPlaylist();if(event.key==='Escape')cancelNewPlaylist();"
+      />
+      <button onclick="confirmNewPlaylist()"
+        style="background:var(--accent);border:none;border-radius:8px;color:#fff;
+               cursor:pointer;font-size:13px;font-weight:700;padding:8px 12px;white-space:nowrap;">
+        ✓
+      </button>
+      <button onclick="cancelNewPlaylist()"
+        style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+               color:var(--text-muted);cursor:pointer;font-size:13px;padding:8px 10px;">
+        ✕
+      </button>
+    </div>
+  `;
+  document.getElementById('plNewInput').focus();
+}
+
+function confirmNewPlaylist() {
+  const input = document.getElementById('plNewInput');
+  const name = input ? input.value.trim() : '';
+  if (name) {
+    const pls = loadPlaylists();
+    pls.push({ name, songs: [] });
+    savePlaylists(pls);
+    activePlIdx = pls.length - 1;
+  }
+  renderPlaylistPanel(); // esto restaura el toolbar original
+}
+
+function cancelNewPlaylist() {
+  renderPlaylistPanel(); // restaura el toolbar original
+}
+
+function deletePlaylist() {
+  const pls = loadPlaylists();
+  if (!pls.length) return;
+  const name = pls[activePlIdx].name;
+
+  const wrap = document.getElementById('plSelectorWrap');
+  if (document.getElementById('plDeleteConfirm')) return;
+
+  const confirm = document.createElement('div');
+  confirm.id = 'plDeleteConfirm';
+  confirm.style.cssText = 'display:flex;gap:6px;align-items:center;padding:0 14px 8px;flex-shrink:0;';
+  confirm.innerHTML = `
+    <span style="flex:1;font-size:12px;color:var(--text-muted);">¿Eliminar "${name}"?</span>
+    <button onclick="confirmDeletePlaylist()"
+      style="background:#ef4444;border:none;border-radius:8px;color:#fff;
+             cursor:pointer;font-size:12px;font-weight:700;padding:6px 10px;">
+      Sí
+    </button>
+    <button onclick="cancelDeletePlaylist()"
+      style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+             color:var(--text-muted);cursor:pointer;font-size:12px;padding:6px 10px;">
+      No
+    </button>
+  `;
+  wrap.insertAdjacentElement('afterend', confirm);
+}
+
+function confirmDeletePlaylist() {
+  const pls = loadPlaylists();
+  pls.splice(activePlIdx, 1);
+  savePlaylists(pls);
+  activePlIdx = Math.max(0, activePlIdx - 1);
+  document.getElementById('plDeleteConfirm')?.remove();
+  renderPlaylistPanel();
+}
+
+function cancelDeletePlaylist() {
+  document.getElementById('plDeleteConfirm')?.remove();
+}
+
+function moveSong(pos, dir) {
+  const pls = loadPlaylists();
+  const pl  = pls[activePlIdx];
+  const newPos = pos + dir;
+  if (newPos < 0 || newPos >= pl.songs.length) return;
+  [pl.songs[pos], pl.songs[newPos]] = [pl.songs[newPos], pl.songs[pos]];
+  savePlaylists(pls);
+  renderPlaylistSongs(pl);
+}
+
+function removeSongFromPlaylist(pos) {
+  const pls = loadPlaylists();
+  const pl  = pls[activePlIdx];
+  pl.songs.splice(pos, 1);
+  savePlaylists(pls);
+  renderPlaylistSongs(pl);
+}
+
+function addSongToPlaylist(plIdx, songIdx) {
+  const pls = loadPlaylists();
+  const pl  = pls[plIdx];
+  if (pl.songs.includes(songIdx)) return;
+  pl.songs.push(songIdx);
+  savePlaylists(pls);
+}
+
+// ══════════════════════════════════════════════
+//  MODAL — AGREGAR A LISTA
+// ══════════════════════════════════════════════
+
+let modalSongIdx = null;
+
+function openAddToListModal(songIdx) {
+  const pls = loadPlaylists();
+  modalSongIdx = songIdx;
+  const song = SONGS[songIdx];
+
+  document.getElementById('modalSongName').textContent = `${song.title} · ${song.artist}`;
+
+  const plList = document.getElementById('modalPlList');
+  if (pls.length === 0) {
+    plList.innerHTML = `<div class="modal-no-lists">No tienes listas aún.<br>Crea una desde "Mis listas".</div>`;
+  } else {
+    plList.innerHTML = pls.map((pl, i) => {
+      const alreadyIn = pl.songs.includes(songIdx);
+      return `
+        <div class="modal-pl-item ${alreadyIn ? 'already-in' : ''}"
+             onclick="${alreadyIn ? '' : `addAndClose(${i})`}">
+          <span>${pl.name}</span>
+          <span class="modal-pl-badge">${alreadyIn ? '✓ Ya está' : pl.songs.length + ' canciones'}</span>
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('modalOverlay').classList.add('show');
+  // Pequeño delay para que la transición CSS funcione
+  requestAnimationFrame(() => {
+    document.getElementById('addToListModal').classList.add('show');
+  });
+}
+
+function addAndClose(plIdx) {
+  addSongToPlaylist(plIdx, modalSongIdx);
+  closeModal();
+  // Si el panel de playlists está visible, actualizarlo
+  if (currentView === 'playlists') renderPlaylistPanel();
+}
+
+function closeModal() {
+  document.getElementById('addToListModal').classList.remove('show');
+  document.getElementById('modalOverlay').classList.remove('show');
+  modalSongIdx = null;
 }
 
 // ══════════════════════════════════════════════
