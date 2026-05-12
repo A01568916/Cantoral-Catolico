@@ -869,8 +869,22 @@ function resetTranspose() {
 function buildSongList(filter) {
   const list = document.getElementById('songList');
   list.innerHTML = '';
-  SONGS.forEach((s, i) => {
-    if (filter && !s.title.toLowerCase().includes(filter.toLowerCase()) && !s.artist.toLowerCase().includes(filter.toLowerCase())) return;
+
+  // Crear índices ordenados alfabéticamente (no modifica el array original)
+  const sorted = SONGS
+    .map((s, i) => ({ s, i }))
+    .filter(({ s }) => !filter ||
+      s.title.toLowerCase().includes(filter.toLowerCase()) ||
+      s.artist.toLowerCase().includes(filter.toLowerCase()))
+    .sort((a, b) => {
+      const isLetter = s => /^[a-záéíóúüñ]/i.test(s);
+      const aL = isLetter(a.s.title), bL = isLetter(b.s.title);
+      if (aL && !bL) return -1;
+      if (!aL && bL) return 1;
+      return a.s.title.localeCompare(b.s.title, 'es');
+    });
+
+  sorted.forEach(({ s, i }) => {
     const el = document.createElement('div');
     el.className = 'song-item' + (i === currentSongIdx ? ' active' : '');
     el.innerHTML = `<div class="song-item-title">${s.title}</div><div class="song-item-artist">${s.artist}</div>`;
@@ -1307,7 +1321,7 @@ donde solo existes tú`
   title: "Otra vez",
   artist: "Un Corazón, Kim Richards, LUISFER",
   key: "Em",
-  capo: "",
+  capo: "Capo 4 (suena en Gm)",
   content: `[Intro]
 Em - C - G - D
 
@@ -3592,50 +3606,6 @@ esclavo de mi libertad.
 Si por un segundo vieras cómo te
    D                              G CG
 miro, no querrías ver nada más.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Todo",
-  artist: "Hakuna",
-  key: "G",
-  capo: "Cejilla 2",
-  content: `[Verso]
-G                            Am
-Padre pon tu Espíritu sobre mí,
-    C
-aquí estoy, aquí me tienes.
-D7
-Gracias por la vida,
-    G G/F# Em
-Que la viva siendo todo yo
-    Am                D7
-Que la viva siendo todo yo
-
-[Coro]
-       G
-Todo libre,
-todo entregado,
-todo Tú,
-todo dado,
-          Bm
-todo alegre,
-todo amante,
-todo amado,
-Bm A#m Am
-todo arrodillado,
-todo hijo,
-todo hermano,
-todo padre,
-       C
-todo disfrutón,
-           D
-todo mariano,
-todos por todos,
-             D7
-que viva todo,
-               G
-con toda el alma.`
 },
 
 // ─────────────────────────────────────────────
