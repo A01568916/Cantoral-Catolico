@@ -1276,6 +1276,20 @@ function renderPlaylistPanel() {
   const empty  = document.getElementById('plEmpty');
   const select = document.getElementById('plSelect');
 
+  // Restaurar toolbar siempre (limpia el input si estaba abierto)
+  const toolbar = document.querySelector('.pl-toolbar');
+  const atLimit = pls.length >= 8;
+  toolbar.innerHTML = atLimit
+    ? `<button class="pl-new-btn" disabled
+          style="opacity:0.45;cursor:not-allowed;border-style:solid;"
+          title="Elimina una lista para poder crear otra">
+         Límite de 8 listas alcanzado
+       </button>`
+    : `<button class="pl-new-btn" onclick="createPlaylist()">＋ Nueva lista</button>`;
+
+  // Limpiar confirmación de borrado si quedó abierta
+  document.getElementById('plDeleteConfirm')?.remove();
+
   if (pls.length === 0) {
     wrap.style.display  = 'none';
     empty.style.display = 'block';
@@ -1286,7 +1300,6 @@ function renderPlaylistPanel() {
   empty.style.display = 'none';
   wrap.style.display  = 'flex';
 
-  // Poblar select
   if (activePlIdx >= pls.length) activePlIdx = pls.length - 1;
   select.innerHTML = pls.map((p, i) =>
     `<option value="${i}" ${i === activePlIdx ? 'selected' : ''}>${p.name}</option>`
