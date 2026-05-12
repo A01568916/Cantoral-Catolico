@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Cantoral"/>
-<link rel="apple-touch-icon" href="icon.png"/>
+<link rel="apple-touch-icon" href="icon.svg"/>
 <style>
   /* ── Variables ── */
   :root {
@@ -1302,8 +1302,24 @@ function renderPlaylistPanel() {
 
   if (activePlIdx >= pls.length) activePlIdx = pls.length - 1;
   select.innerHTML = pls.map((p, i) =>
-    `<option value="${i}" ${i === activePlIdx ? 'selected' : ''}>${p.name}</option>`
+    `<option value="${i}" ${i === activePlIdx ? 'selected' : ''}>${p.name} (${p.songs.length})</option>`
   ).join('');
+
+  // Botón renombrar
+  let renameBtn = document.getElementById('plRenameBtn');
+  if (!renameBtn) {
+    renameBtn = document.createElement('button');
+    renameBtn.id = 'plRenameBtn';
+    renameBtn.title = 'Renombrar lista';
+    renameBtn.style.cssText = `background:none;border:1px solid var(--border);border-radius:8px;
+      color:var(--text-muted);cursor:pointer;font-size:14px;padding:6px 9px;
+      transition:border-color 0.18s,color 0.18s;line-height:1;min-height:36px;`;
+    renameBtn.textContent = '✏️';
+    renameBtn.onmouseenter = () => { renameBtn.style.borderColor='var(--accent)'; renameBtn.style.color='var(--accent2)'; };
+    renameBtn.onmouseleave = () => { renameBtn.style.borderColor='var(--border)';  renameBtn.style.color='var(--text-muted)'; };
+    renameBtn.onclick = renamePlaylist;
+    wrap.insertBefore(renameBtn, wrap.querySelector('.pl-delete-btn'));
+  }
 
   renderPlaylistSongs(pls[activePlIdx]);
 }
@@ -1418,6 +1434,53 @@ function deletePlaylist() {
     </button>
   `;
   wrap.insertAdjacentElement('afterend', confirm);
+}
+
+function renamePlaylist() {
+  const pls = loadPlaylists();
+  if (!pls.length) return;
+  const wrap = document.getElementById('plSelectorWrap');
+  if (document.getElementById('plRenameInput')) return;
+
+  // Ocultar temporalmente el select y los botones
+  wrap.style.flexWrap = 'wrap';
+  const renameRow = document.createElement('div');
+  renameRow.id = 'plRenameInput';
+  renameRow.style.cssText = 'display:flex;gap:6px;align-items:center;width:100%;margin-top:6px;';
+  renameRow.innerHTML = `
+    <input id="plRenameField" type="text" value="${pls[activePlIdx].name}"
+      style="flex:1;background:var(--surface2);border:1.5px solid var(--accent);border-radius:8px;
+             color:var(--text);font-size:13px;padding:7px 10px;outline:none;min-width:0;"
+      onkeydown="if(event.key==='Enter')confirmRename();if(event.key==='Escape')cancelRename();"
+    />
+    <button onclick="confirmRename()"
+      style="background:var(--accent);border:none;border-radius:8px;color:#fff;
+             cursor:pointer;font-size:13px;font-weight:700;padding:7px 12px;">✓</button>
+    <button onclick="cancelRename()"
+      style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+             color:var(--text-muted);cursor:pointer;font-size:13px;padding:7px 10px;">✕</button>
+  `;
+  wrap.appendChild(renameRow);
+  const field = document.getElementById('plRenameField');
+  field.focus();
+  field.select();
+}
+
+function confirmRename() {
+  const field = document.getElementById('plRenameField');
+  const name = field ? field.value.trim() : '';
+  if (name) {
+    const pls = loadPlaylists();
+    pls[activePlIdx].name = name;
+    savePlaylists(pls);
+  }
+  cancelRename();
+}
+
+function cancelRename() {
+  document.getElementById('plRenameInput')?.remove();
+  document.getElementById('plSelectorWrap').style.flexWrap = '';
+  renderPlaylistPanel();
 }
 
 function confirmDeletePlaylist() {
