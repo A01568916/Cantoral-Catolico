@@ -979,7 +979,20 @@ function transposeNote(note, semitones, preferFlats) {
   const idx = noteIndex(note);
   if (idx === -1) return note;
   const newIdx = ((idx + semitones) % 12 + 12) % 12;
-  return preferFlats ? FLATS[newIdx] : SHARPS[newIdx];
+  let transposed = preferFlats ? FLATS[newIdx] : SHARPS[newIdx];
+
+  // Normalize invalid sharps to their equivalent notes
+  const invalidSharps = {
+    'E#': 'F',
+    'C##': 'D',
+    'D##': 'E',
+    'F##': 'G',
+    'G##': 'A',
+    'A##': 'B',
+    'B#': 'C'
+  };
+
+  return invalidSharps[transposed] || transposed;
 }
 
 // Matches chord symbols like: C, Cm, C#, Db, Cmaj7, C/E, G#m7, etc.
