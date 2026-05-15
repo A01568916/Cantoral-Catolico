@@ -776,6 +776,137 @@
   }
   .modal-close:hover { border-color: var(--accent); color: var(--text); }
 
+  /* ── Song title row (título + iconos) ── */
+  .song-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 2px;
+  }
+  .song-title-row .song-title { flex: 1; }
+
+  .song-header-icons {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    padding-top: 4px;
+  }
+
+  /* Botón pin (guardar tono) */
+  .pin-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    line-height: 1;
+    color: var(--text-muted);
+  }
+  .pin-btn:hover { background: var(--surface2); border-color: var(--border); }
+  .pin-btn.pinned {
+    color: var(--chord);
+    border-color: var(--chord);
+    background: #1e1a0e;
+  }
+  .pin-btn.pinned:hover { background: #2a240f; }
+
+  /* Botón nota */
+  .note-toggle-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    line-height: 1;
+  }
+  .note-toggle-btn:hover { background: var(--surface2); border-color: var(--border); }
+  .note-toggle-btn.has-note {
+    border-color: var(--accent);
+    background: #1a1830;
+  }
+  .note-toggle-btn.has-note:hover { background: #22204a; }
+
+  /* Panel de notas */
+  .note-panel {
+    margin: 0 40px 0;
+    background: #15152a;
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    overflow: hidden;
+    animation: slideDown 0.2s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .note-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: #1e1d3a;
+    border-bottom: 1px solid var(--border);
+  }
+  .note-panel-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent2);
+    letter-spacing: 0.04em;
+  }
+  .note-panel-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    border-radius: 5px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .note-panel-close:hover { background: var(--surface2); color: var(--text); }
+  .note-textarea {
+    width: 100%;
+    min-height: 80px;
+    max-height: 160px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 12px 14px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+  }
+  .note-textarea::placeholder { color: var(--text-muted); }
+
+  /* Iconos en lista de canciones */
+  .song-item-badges {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+    align-items: center;
+  }
+  .badge-pin  { font-size: 12px; opacity: 0.8; }
+  .badge-note { font-size: 12px; opacity: 0.8; }
+
+  /* Ocultar nota en impresión */
+  @media print {
+    .note-panel, .note-toggle-btn, .pin-btn, .song-header-icons { display: none !important; }
+  }
+
   /* ── Print ── */
   @media print {
     body { background: #fff !important; color: #000 !important; }
@@ -837,6 +968,7 @@
     }
     .song-body { padding: 16px 20px 80px; }
     .capo-notice { margin: 10px 20px 0; }
+    .note-panel { margin: 0 20px 0; }
     .song-title { font-size: 20px; }
     .print-btn { display: none; }
   }
@@ -927,7 +1059,13 @@
       <div class="song-header" id="songHeader">
         <button class="header-toggle" id="headerToggle" onclick="toggleHeader()">▲ Ocultar</button>
         <div class="song-collapsible" id="songCollapsible">
-          <div class="song-title" id="viewTitle"></div>
+          <div class="song-title-row">
+            <div class="song-title" id="viewTitle"></div>
+            <div class="song-header-icons">
+              <button class="pin-btn" id="pinBtn" onclick="togglePinTranspose()" title="Guardar tono"></button>
+              <button class="note-toggle-btn" id="noteToggleBtn" onclick="toggleNotePanel()" title="Notas personales">📝</button>
+            </div>
+          </div>
           <div class="song-artist" id="viewArtist"></div>
           <div class="song-meta">
             <div class="key-badge">Tono: <span id="viewKey"></span></div>
@@ -947,6 +1085,16 @@
         </div>
       </div>
       <div class="capo-notice" id="capoNotice"></div>
+      <!-- Panel de notas personales -->
+      <div class="note-panel" id="notePanel" style="display:none;">
+        <div class="note-panel-header">
+          <span class="note-panel-label">📝 Notas personales</span>
+          <button class="note-panel-close" onclick="toggleNotePanel()">✕</button>
+        </div>
+        <textarea class="note-textarea" id="noteTextarea"
+          placeholder="Ej: Empezar en Fa, entrada lenta, solo para Misa de 11..."
+          oninput="saveNote()"></textarea>
+      </div>
       <div class="song-body" id="songBody"></div>
     </div>
   </main>
@@ -1139,7 +1287,10 @@ function showSong(idx) {
   currentSongIdx = idx;
   currentSemitones = 0;
 
-  // Refrescar lista activa según la vista actual
+  // Cargar tono guardado y estado de notas
+  loadSongExtras(idx);
+
+  // Refrescar lista activa
   if (currentView === 'all') {
     buildSongList(document.getElementById('searchInput').value);
   } else {
@@ -1151,12 +1302,9 @@ function showSong(idx) {
   const sv = document.getElementById('songView');
   sv.classList.add('visible');
 
-  renderSong(idx, 0);
+  renderSong(idx, currentSemitones);
 
-  // Scroll main to top
   document.getElementById('mainArea').scrollTo(0, 0);
-
-  // Cerrar sidebar en móvil/tablet al seleccionar canción
   if (window.innerWidth <= 768) closeSidebar();
 }
 
@@ -1203,12 +1351,137 @@ function transpose(delta) {
   if (currentSongIdx === null) return;
   currentSemitones += delta;
   renderSong(currentSongIdx, currentSemitones);
+  updatePinBtn();
 }
 
 function resetTranspose() {
   if (currentSongIdx === null) return;
   currentSemitones = 0;
   renderSong(currentSongIdx, 0);
+  updatePinBtn();
+}
+
+// ══════════════════════════════════════════════
+//  HISTORIAL DE TRANSPOSICIONES (pin)
+// ══════════════════════════════════════════════
+
+function loadTransposeHistory() {
+  try { return JSON.parse(localStorage.getItem('cantoral_transpose') || '{}'); }
+  catch { return {}; }
+}
+function saveTransposeHistory(h) {
+  localStorage.setItem('cantoral_transpose', JSON.stringify(h));
+}
+
+function togglePinTranspose() {
+  if (currentSongIdx === null) return;
+  const h = loadTransposeHistory();
+  const key = String(currentSongIdx);
+
+  if (h[key] !== undefined) {
+    // Ya está pinneado → olvidar
+    delete h[key];
+    saveTransposeHistory(h);
+    updatePinBtn();
+    buildSongList(document.getElementById('searchInput').value);
+  } else {
+    // Pinear el tono actual
+    h[key] = currentSemitones;
+    saveTransposeHistory(h);
+    updatePinBtn();
+    buildSongList(document.getElementById('searchInput').value);
+  }
+}
+
+function updatePinBtn() {
+  const btn = document.getElementById('pinBtn');
+  if (!btn || currentSongIdx === null) return;
+  const h = loadTransposeHistory();
+  const key = String(currentSongIdx);
+  const pinned = h[key] !== undefined;
+  const isCurrentPinned = pinned && h[key] === currentSemitones;
+
+  if (pinned) {
+    btn.textContent = '📌';
+    btn.classList.add('pinned');
+    btn.title = 'Tono guardado — click para olvidar';
+  } else {
+    btn.textContent = '📍';
+    btn.classList.remove('pinned');
+    btn.title = currentSemitones !== 0
+      ? 'Guardar este tono para esta canción'
+      : 'Transpón la canción y guarda tu tono favorito';
+  }
+}
+
+// ══════════════════════════════════════════════
+//  NOTAS PERSONALES
+// ══════════════════════════════════════════════
+
+function loadNotes() {
+  try { return JSON.parse(localStorage.getItem('cantoral_notes') || '{}'); }
+  catch { return {}; }
+}
+function saveNotes(n) {
+  localStorage.setItem('cantoral_notes', JSON.stringify(n));
+}
+
+function saveNote() {
+  if (currentSongIdx === null) return;
+  const notes = loadNotes();
+  const val = document.getElementById('noteTextarea').value;
+  if (val.trim()) {
+    notes[String(currentSongIdx)] = val;
+  } else {
+    delete notes[String(currentSongIdx)];
+  }
+  saveNotes(notes);
+  updateNoteBtn();
+  // Refrescar iconos en la lista
+  if (currentView === 'all') {
+    buildSongList(document.getElementById('searchInput').value);
+  }
+}
+
+function updateNoteBtn() {
+  if (currentSongIdx === null) return;
+  const notes = loadNotes();
+  const hasNote = !!notes[String(currentSongIdx)]?.trim();
+  const btn = document.getElementById('noteToggleBtn');
+  if (hasNote) {
+    btn.classList.add('has-note');
+    btn.title = 'Tienes una nota — click para ver/editar';
+  } else {
+    btn.classList.remove('has-note');
+    btn.title = 'Agregar nota personal';
+  }
+}
+
+function toggleNotePanel() {
+  const panel = document.getElementById('notePanel');
+  const isVisible = panel.style.display !== 'none';
+  panel.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible && currentSongIdx !== null) {
+    const notes = loadNotes();
+    document.getElementById('noteTextarea').value = notes[String(currentSongIdx)] || '';
+    document.getElementById('noteTextarea').focus();
+  }
+}
+
+function loadSongExtras(idx) {
+  // Cargar tono guardado
+  const h = loadTransposeHistory();
+  const saved = h[String(idx)];
+  if (saved !== undefined && saved !== 0) {
+    currentSemitones = saved;
+  }
+
+  // Cerrar panel de notas si estaba abierto
+  document.getElementById('notePanel').style.display = 'none';
+
+  // Actualizar botones
+  updatePinBtn();
+  updateNoteBtn();
 }
 
 // ══════════════════════════════════════════════
@@ -1218,6 +1491,9 @@ function resetTranspose() {
 function buildSongList(filter) {
   const list = document.getElementById('songList');
   list.innerHTML = '';
+
+  const transposeH = loadTransposeHistory();
+  const notes      = loadNotes();
 
   const sorted = SONGS
     .map((s, i) => ({ s, i }))
@@ -1233,12 +1509,19 @@ function buildSongList(filter) {
     });
 
   sorted.forEach(({ s, i }) => {
+    const hasPinned = transposeH[String(i)] !== undefined;
+    const hasNote   = !!notes[String(i)]?.trim();
+
     const el = document.createElement('div');
     el.className = 'song-item' + (i === currentSongIdx ? ' active' : '');
     el.innerHTML = `
       <div class="song-item-info" onclick="showSong(${i})">
         <div class="song-item-title">${s.title}</div>
         <div class="song-item-artist">${s.artist}</div>
+      </div>
+      <div class="song-item-badges">
+        ${hasPinned ? '<span class="badge-pin" title="Tono guardado">📌</span>' : ''}
+        ${hasNote   ? '<span class="badge-note" title="Tiene nota">📝</span>' : ''}
       </div>
       <button class="song-item-add-btn" onclick="openAddToListModal(${i})" title="Agregar a lista">＋</button>
     `;
@@ -5117,7 +5400,7 @@ Los coros del universo te aclaman
 C             G
 a Ti, a Ti para siempre. (x2)
 
-[Verso 2]
+[Verso 3]
 F                          Am
 Con la Palabra y con Tu aliento,
 hiciste al hombre para Ti,
@@ -5136,7 +5419,7 @@ Los coros del universo te aclaman
 C             G
 a Ti, a Ti para siempre. (x4)
 
-[Verso 3]
+[Verso 2]
 C             Fmaj7
 Gloria, gloria a Ti,
       Am
