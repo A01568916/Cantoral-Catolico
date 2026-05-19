@@ -4,8 +4,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Cantoral · RiseUp 2026</title>
-
-<!-- PWA -->
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#7c6af7"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -14,989 +12,321 @@
 <meta name="apple-mobile-web-app-title" content="Cantoral"/>
 <link rel="apple-touch-icon" href="icon.svg"/>
 <style>
-  /* ── Variables ── */
-  :root {
-    --bg: #0f0f13;
-    --surface: #1a1a24;
-    --surface2: #22222f;
-    --border: #2e2e42;
-    --accent: #7c6af7;
-    --accent2: #a78bfa;
-    --text: #e8e8f0;
-    --text-muted: #888899;
-    --chord: #f59e0b;
-    --chord-hover: #fbbf24;
-    --radius: 12px;
-    --font-mono: 'Courier New', Courier, monospace;
-  }
+/* ── Variables ── */
+:root {
+  --bg: #0f0f13;
+  --surface: #1a1a24;
+  --surface2: #22222f;
+  --border: #2e2e42;
+  --accent: #7c6af7;
+  --accent2: #a78bfa;
+  --text: #e8e8f0;
+  --text-muted: #888899;
+  --chord: #f59e0b;
+  --chord-hover: #fbbf24;
+  --radius: 12px;
+  --font-mono: 'Courier New', Courier, monospace;
+}
 
-  /* ── Reset ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    min-height: 100vh;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+}
 
-  /* ── Layout ── */
-  .app { display: flex; height: 100vh; overflow: hidden; }
+.app{display:flex;height:100vh;overflow:hidden}
 
-  /* ── Overlay (móvil) ── */
-  .sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 99;
-    backdrop-filter: blur(2px);
-  }
-  .sidebar-overlay.show { display: block; }
+/* ── Overlay (móvil) ── */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;backdrop-filter:blur(2px)}
+.sidebar-overlay.show{display:block}
 
-  /* ── Sidebar ── */
-  .sidebar {
-    width: 300px;
-    min-width: 260px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex-shrink: 0;
-    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-    z-index: 100;
-  }
+/* ── Sidebar ── */
+.sidebar{width:300px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:100}
+.sidebar-header{padding:24px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between}
+.sidebar-header-text{flex:1}
+.sidebar-title{font-size:17px;font-weight:700;color:var(--accent2);letter-spacing:.02em}
+.sidebar-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+.sidebar-close{display:none;background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;padding:0 0 0 12px;line-height:1;flex-shrink:0}
+.sidebar-search{margin:10px 14px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;width:calc(100% - 28px);transition:border-color .2s}
+.sidebar-search:focus{border-color:var(--accent)}
+.sidebar-search::placeholder{color:var(--text-muted)}
+.song-list{overflow-y:auto;flex:1;padding:6px 0;-webkit-overflow-scrolling:touch}
+.song-list::-webkit-scrollbar{width:4px}
+.song-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.song-item{padding:11px 20px;cursor:pointer;transition:background .15s;border-left:3px solid transparent;display:flex;align-items:center;gap:4px}
+.song-item:hover{background:var(--surface2)}
+.song-item.active{background:var(--surface2);border-left-color:var(--accent)}
+.song-item-info{flex:1;min-width:0}
+.song-item-title{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-item-artist{font-size:11px;color:var(--text-muted);margin-top:2px}
 
-  .sidebar-header {
-    padding: 24px 20px 14px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
+/* Botón agregar a lista */
+.song-item-add-btn{background:none;border:1px solid transparent;border-radius:6px;color:var(--text-muted);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0;transition:opacity .15s,background .15s,color .15s,border-color .15s;flex-shrink:0;line-height:1}
+.song-item:hover .song-item-add-btn,.song-item-add-btn:focus{opacity:1}
+.song-item-add-btn:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent2)}
 
-  .sidebar-header-text { flex: 1; }
+/* ── Main ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;-webkit-overflow-scrolling:touch}
+.main::-webkit-scrollbar{width:6px}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-  .sidebar-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--accent2);
-    letter-spacing: 0.02em;
-  }
+/* ── Topbar ── */
+.topbar{display:none;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.topbar-menu-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;padding:7px 10px;font-size:18px;line-height:1;flex-shrink:0;transition:background .15s}
+.topbar-menu-btn:hover{background:var(--surface2)}
+.topbar-title{font-size:15px;font-weight:700;color:var(--accent2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-  .sidebar-sub {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 3px;
-  }
+/* Welcome */
+.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:12px;padding:40px}
+.welcome-icon{font-size:64px;opacity:.3}
+.welcome-text{font-size:18px;font-weight:600;color:var(--text);opacity:.5}
 
-  /* Botón cerrar sidebar (solo móvil) */
-  .sidebar-close {
-    display: none;
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 22px;
-    cursor: pointer;
-    padding: 0 0 0 12px;
-    line-height: 1;
-    flex-shrink: 0;
-  }
+/* Song view */
+.song-view{display:none;flex-direction:column;min-height:100%}
+.song-view.visible{display:flex}
 
-  .sidebar-search {
-    margin: 10px 14px;
-    padding: 9px 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 14px;
-    outline: none;
-    width: calc(100% - 28px);
-    transition: border-color 0.2s;
-  }
-  .sidebar-search:focus { border-color: var(--accent); }
-  .sidebar-search::placeholder { color: var(--text-muted); }
+.song-header{padding:28px 40px 20px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:9;display:flex;flex-direction:row;align-items:flex-start;gap:8px}
+.header-toggle{flex-shrink:0;margin-left:auto;background:var(--surface2);border:1px solid var(--border);border-radius:20px;color:var(--text-muted);cursor:pointer;padding:4px 12px;font-size:11px;line-height:1.6;transition:all .2s;white-space:nowrap;user-select:none;min-height:32px;align-self:flex-start}
+.header-toggle:hover{border-color:var(--accent);color:var(--accent2)}
+.song-collapsible{flex:1;min-width:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1),opacity .3s;max-height:600px;opacity:1}
+.song-header.collapsed .song-collapsible{max-height:0;opacity:0}
+.song-header.collapsed{padding-top:10px;padding-bottom:10px}
 
-  .song-list {
-    overflow-y: auto;
-    flex: 1;
-    padding: 6px 0;
-    -webkit-overflow-scrolling: touch;
-  }
-  .song-list::-webkit-scrollbar { width: 4px; }
-  .song-list::-webkit-scrollbar-track { background: transparent; }
-  .song-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.fontsize-group{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.fontsize-btn{background:none;border:none;color:var(--text);cursor:pointer;padding:7px 12px;font-size:13px;font-weight:700;transition:background .15s,color .15s;line-height:1;min-width:40px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.fontsize-btn:hover,.fontsize-btn:active{background:var(--accent);color:#fff}
+.fontsize-display{padding:7px 8px;font-size:11px;color:var(--text-muted);min-width:36px;text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border);font-variant-numeric:tabular-nums}
+.song-title{font-size:26px;font-weight:800;color:var(--text);line-height:1.2}
+.song-artist{font-size:14px;color:var(--accent2);margin-top:4px;font-weight:500}
+.song-meta{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.key-badge{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.key-badge span{color:var(--chord);font-weight:700;font-size:15px}
+.transpose-group{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.transpose-btn{background:none;border:none;color:var(--text);cursor:pointer;padding:7px 16px;font-size:20px;transition:background .15s,color .15s;line-height:1;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.transpose-btn:hover,.transpose-btn:active{background:var(--accent);color:#fff}
+.transpose-display{padding:7px 10px;font-size:13px;color:var(--text-muted);min-width:64px;text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border);font-variant-numeric:tabular-nums;white-space:nowrap}
+.reset-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;padding:7px 12px;font-size:12px;transition:all .15s;min-height:44px}
+.reset-btn:hover{border-color:var(--accent);color:var(--accent2)}
+.print-btn{background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;padding:7px 16px;font-size:13px;font-weight:600;transition:background .15s;margin-left:auto}
+.print-btn:hover{background:var(--accent2)}
 
-  .song-item {
-    padding: 11px 20px;
-    cursor: pointer;
-    transition: background 0.15s;
-    border-left: 3px solid transparent;
-  }
-  .song-item:hover { background: var(--surface2); }
-  .song-item.active {
-    background: var(--surface2);
-    border-left-color: var(--accent);
-  }
-  .song-item-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .song-item-artist {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 2px;
-  }
+.capo-notice{margin:12px 40px 0;padding:8px 14px;background:#1e1a0e;border:1px solid #3d3010;border-radius:8px;font-size:13px;color:#f59e0b99;display:none}
+.capo-notice.show{display:block}
 
-  /* ── Main ── */
-  .main {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    -webkit-overflow-scrolling: touch;
-  }
-  .main::-webkit-scrollbar { width: 6px; }
-  .main::-webkit-scrollbar-track { background: transparent; }
-  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* ── Song Body — NUEVO SISTEMA inline chords ── */
+.song-body{padding:24px 40px 60px;flex:1;font-size:15px}
 
-  /* ── Topbar (móvil e iPad) ── */
-  .topbar {
-    display: none;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .topbar-menu-btn {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    cursor: pointer;
-    padding: 7px 10px;
-    font-size: 18px;
-    line-height: 1;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .topbar-menu-btn:hover { background: var(--surface2); }
-  .topbar-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--accent2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+/*
+  Cada "línea musical" es un bloque .cl-line.
+  Dentro puede haber spans alternados: .cl-chord y .cl-word
+  El acorde flota arriba del texto gracias a position+line-height.
+*/
+.cl-line{
+  display:block;
+  /* Espacio para la línea de acordes encima */
+  padding-top:1.4em;
+  position:relative;
+  line-height:1.7;
+  margin-bottom:2px;
+  white-space:nowrap;  /* evita que el navegador parta acordes */
+}
+.cl-line.wrap{white-space:normal} /* para líneas largas en móvil */
 
-  /* Welcome screen */
-  .welcome {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    gap: 12px;
-    padding: 40px;
-  }
-  .welcome-icon { font-size: 64px; opacity: 0.3; }
-  .welcome-text { font-size: 18px; font-weight: 600; color: var(--text); opacity: 0.5; }
+.cl-segment{
+  display:inline-block;
+  position:relative;
+  vertical-align:bottom;
+}
 
-  /* Song view */
-  .song-view {
-    display: none;
-    flex-direction: column;
-    min-height: 100%;
-  }
-  .song-view.visible { display: flex; }
+.cl-chord{
+  position:absolute;
+  top:-1.3em;
+  left:0;
+  color:var(--chord);
+  font-weight:700;
+  font-size:.95em;
+  white-space:nowrap;
+  letter-spacing:.02em;
+  cursor:default;
+  user-select:none;
+}
 
-  .song-header {
-    padding: 28px 40px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    position: sticky;
-    top: 0;
-    z-index: 9;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 8px;
-  }
+.cl-word{
+  display:inline;
+  color:var(--text);
+}
 
-  /* Botón para colapsar/expandir el encabezado */
-  .header-toggle {
-    flex-shrink: 0;
-    margin-left: auto;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 4px 12px;
-    font-size: 11px;
-    line-height: 1.6;
-    transition: all 0.2s;
-    white-space: nowrap;
-    user-select: none;
-    min-height: 32px;
-    align-self: flex-start;
-  }
-  .header-toggle:hover { border-color: var(--accent); color: var(--accent2); }
+/* Línea solo de acordes (intro, instrumental) */
+.cl-chord-only{
+  display:block;
+  color:var(--chord);
+  font-weight:700;
+  font-size:.95em;
+  letter-spacing:.05em;
+  margin-bottom:4px;
+  padding-top:.3em;
+}
 
-  /* Contenido colapsable ocupa todo el ancho disponible */
-  .song-collapsible {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(.4,0,.2,1), opacity 0.3s;
-    max-height: 600px;
-    opacity: 1;
-  }
-  .song-header.collapsed .song-collapsible {
-    max-height: 0;
-    opacity: 0;
-  }
-  .song-header.collapsed {
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
+/* Línea de solo letra (sin acordes) */
+.cl-lyric-only{
+  display:block;
+  line-height:1.7;
+  margin-bottom:2px;
+}
 
-  /* Controles de tamaño de letra */
-  .fontsize-group {
-    display: flex;
-    align-items: center;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .fontsize-btn {
-    background: none;
-    border: none;
-    color: var(--text);
-    cursor: pointer;
-    padding: 7px 12px;
-    font-size: 13px;
-    font-weight: 700;
-    transition: background 0.15s, color 0.15s;
-    line-height: 1;
-    min-width: 40px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .fontsize-btn:hover, .fontsize-btn:active { background: var(--accent); color: #fff; }
-  .fontsize-display {
-    padding: 7px 8px;
-    font-size: 11px;
-    color: var(--text-muted);
-    min-width: 36px;
-    text-align: center;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    font-variant-numeric: tabular-nums;
-  }
+.cl-section{
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--accent);
+  margin-top:28px;
+  margin-bottom:6px;
+  padding-left:2px;
+  display:block;
+}
+.cl-section:first-child{margin-top:0}
 
-  .song-title {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--text);
-    line-height: 1.2;
-  }
+.cl-empty{display:block;height:10px}
 
-  .song-artist {
-    font-size: 14px;
-    color: var(--accent2);
-    margin-top: 4px;
-    font-weight: 500;
-  }
+/* ── View selector ── */
+.view-selector{display:flex;margin:10px 14px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;flex-shrink:0}
+.view-tab{flex:1;background:none;border:none;border-radius:8px;color:var(--text-muted);cursor:pointer;font-size:13px;font-weight:600;padding:7px 0;transition:background .18s,color .18s}
+.view-tab.active{background:var(--accent);color:#fff}
+.view-tab:not(.active):hover{color:var(--text)}
 
-  .song-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
+/* ── Playlist panel ── */
+.pl-toolbar{padding:10px 14px 6px;flex-shrink:0}
+.pl-new-btn{width:100%;background:none;border:1.5px dashed var(--border);border-radius:9px;color:var(--accent2);cursor:pointer;font-size:13px;font-weight:600;padding:9px 0;transition:border-color .18s,background .18s;letter-spacing:.01em}
+.pl-new-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.pl-selector-wrap{display:flex;align-items:center;gap:6px;padding:0 14px 8px;flex-shrink:0}
+.pl-select{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-weight:600;padding:7px 10px;outline:none;cursor:pointer;transition:border-color .18s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888899' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.pl-select:focus{border-color:var(--accent)}
+.pl-delete-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;font-size:15px;padding:6px 9px;transition:border-color .18s,color .18s;line-height:1;min-height:36px}
+.pl-delete-btn:hover{border-color:#ef4444;color:#ef4444}
+.pl-empty{padding:40px 24px;text-align:center;color:var(--text-muted);font-size:13px;line-height:1.7}
+.song-item-pl{display:flex;align-items:center;gap:0;padding:6px 10px 6px 14px;border-left:3px solid transparent;transition:background .15s}
+.song-item-pl:hover{background:var(--surface2)}
+.song-item-pl.active{background:var(--surface2);border-left-color:var(--accent)}
+.song-item-pl-info{flex:1;min-width:0;cursor:pointer;padding:5px 0}
+.pl-arrows{display:flex;flex-direction:column;gap:2px;flex-shrink:0;margin-right:4px}
+.pl-arrow{background:none;border:1px solid transparent;border-radius:6px;color:var(--text-muted);cursor:pointer;width:28px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:background .15s,color .15s,border-color .15s;line-height:1;flex-shrink:0}
+.pl-arrow:hover:not(:disabled){background:var(--accent);border-color:var(--accent);color:#fff}
+.pl-arrow:disabled{opacity:.2;cursor:default}
+.pl-remove-btn{background:none;border:1px solid transparent;border-radius:6px;color:var(--text-muted);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s,color .15s,border-color .15s;flex-shrink:0;margin-left:2px;line-height:1}
+.pl-remove-btn:hover{background:#2d1515;border-color:#ef4444;color:#ef4444}
 
-  .key-badge {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 5px 12px;
-    font-size: 13px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-  }
-  .key-badge span { color: var(--chord); font-weight: 700; font-size: 15px; }
+/* ── Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;backdrop-filter:blur(3px)}
+.modal-overlay.show{display:block}
+.modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.96);background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;z-index:201;width:min(340px,calc(100vw - 32px));box-shadow:0 24px 60px rgba(0,0,0,.5);transition:transform .2s,opacity .2s;opacity:0}
+.modal.show{display:block;transform:translate(-50%,-50%) scale(1);opacity:1}
+.modal-title{font-size:15px;font-weight:700;color:var(--accent2);margin-bottom:6px}
+.modal-song-name{font-size:13px;color:var(--text-muted);margin-bottom:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal-pl-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.modal-pl-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:border-color .15s,background .15s}
+.modal-pl-item:hover{border-color:var(--accent);background:#1f1f2e}
+.modal-pl-item.already-in{border-color:var(--accent);color:var(--accent2);cursor:default}
+.modal-pl-item.already-in:hover{background:var(--surface2)}
+.modal-pl-badge{font-size:11px;color:var(--text-muted);font-weight:400}
+.modal-pl-item.already-in .modal-pl-badge{color:var(--accent)}
+.modal-no-lists{color:var(--text-muted);font-size:13px;text-align:center;padding:12px 0}
+.modal-close{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:var(--text-muted);cursor:pointer;font-size:13px;padding:10px;transition:border-color .15s}
+.modal-close:hover{border-color:var(--accent);color:var(--text)}
 
-  .transpose-group {
-    display: flex;
-    align-items: center;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
+/* ── Song title row ── */
+.song-title-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:2px}
+.song-title-row .song-title{flex:1}
+.song-header-icons{display:flex;gap:6px;flex-shrink:0;padding-top:4px}
+.pin-btn{background:none;border:1px solid transparent;border-radius:7px;cursor:pointer;font-size:18px;padding:4px 6px;transition:border-color .15s,background .15s;line-height:1}
+.pin-btn:hover{border-color:var(--border);background:var(--surface2)}
+.pin-btn.pinned{border-color:var(--accent)}
+.note-toggle-btn{background:none;border:1px solid transparent;border-radius:7px;cursor:pointer;font-size:18px;padding:4px 6px;transition:border-color .15s,background .15s;line-height:1}
+.note-toggle-btn:hover{border-color:var(--border);background:var(--surface2)}
+.note-toggle-btn.has-note{border-color:var(--accent2)}
 
-  .transpose-btn {
-    background: none;
-    border: none;
-    color: var(--text);
-    cursor: pointer;
-    padding: 7px 16px;
-    font-size: 20px;
-    transition: background 0.15s, color 0.15s;
-    line-height: 1;
-    /* tap area generoso para móvil */
-    min-width: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .transpose-btn:hover, .transpose-btn:active { background: var(--accent); color: #fff; }
+/* ── Song badges in list ── */
+.song-item-badges{display:flex;gap:3px;flex-shrink:0}
+.badge-pin,.badge-note{font-size:12px;opacity:.8}
 
-  .transpose-display {
-    padding: 7px 10px;
-    font-size: 13px;
-    color: var(--text-muted);
-    min-width: 64px;
-    text-align: center;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
+/* ── Note panel ── */
+.note-panel{margin:0 40px 0;background:var(--surface2);border:1px solid var(--border);border-radius:0 0 12px 12px;overflow:hidden;transition:max-height .3s}
+.note-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px}
+.note-panel-label{font-size:12px;font-weight:600;color:var(--accent2)}
+.note-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:0;line-height:1}
+.note-textarea{width:100%;background:transparent;border:none;border-top:1px solid var(--border);color:var(--text);font-size:13px;font-family:inherit;padding:10px 14px;resize:vertical;min-height:80px;outline:none;line-height:1.6}
+.note-textarea::placeholder{color:var(--text-muted)}
 
-  .reset-btn {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 7px 12px;
-    font-size: 12px;
-    transition: all 0.15s;
-    min-height: 44px;
-  }
-  .reset-btn:hover { border-color: var(--accent); color: var(--accent2); }
+/* ── Loading ── */
+.loading-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text-muted)}
+.loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-error{color:#ef4444;font-size:14px;text-align:center;padding:20px;max-width:400px}
 
-  .print-btn {
-    background: var(--accent);
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    cursor: pointer;
-    padding: 7px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    transition: background 0.15s;
-    margin-left: auto;
-  }
-  .print-btn:hover { background: var(--accent2); }
+/* ── Print ── */
+@media print {
+  body{background:#fff!important;color:#000!important}
+  .sidebar,.sidebar-overlay,.topbar,.song-header .transpose-group,.song-header .reset-btn,.song-header .print-btn,.note-panel,.note-toggle-btn,.pin-btn,.song-header-icons{display:none!important}
+  .app{display:block}
+  .main{overflow:visible}
+  .song-view{display:flex!important}
+  .welcome,.loading-screen{display:none!important}
+  .song-header{position:static;background:#fff;border-bottom:2px solid #000;padding:16px 24px}
+  .song-title{color:#000;font-size:22px}
+  .song-artist{color:#444}
+  .key-badge{border-color:#ccc;color:#444}
+  .key-badge span{color:#b45309}
+  .song-body{padding:16px 24px 32px}
+  .cl-section{color:#7c3aed}
+  .cl-chord{color:#b45309!important}
+  .cl-word{color:#000!important}
+  .cl-chord-only{color:#b45309!important}
+  .cl-lyric-only{color:#000!important}
+  .capo-notice{color:#92400e;border-color:#fbbf24;background:#fffbeb;display:block;margin:8px 24px}
+}
 
-  /* Capo notice */
-  .capo-notice {
-    margin: 12px 40px 0;
-    padding: 8px 14px;
-    background: #1e1a0e;
-    border: 1px solid #3d3010;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #f59e0b99;
-    display: none;
-  }
-  .capo-notice.show { display: block; }
+/* ── iPad ── */
+@media (max-width:1024px){
+  .sidebar{width:260px}
+  .song-header{padding:20px 28px 18px}
+  .song-body{padding:20px 28px 60px}
+  .capo-notice{margin:12px 28px 0}
+}
 
-  /* Song body */
-  /* Section label */
-  .section-label {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--accent);
-    margin-top: 28px;
-    margin-bottom: 6px;
-    padding-left: 2px;
-  }
-  .section-label:first-child { margin-top: 0; }
+@media (max-width:768px){
+  .topbar{display:flex}
+  .sidebar-close{display:block}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:300px;transform:translateX(-100%);box-shadow:4px 0 32px rgba(0,0,0,.5)}
+  .sidebar.open{transform:translateX(0)}
+  .song-header{position:static;padding:16px 20px 14px}
+  .song-body{padding:16px 20px 80px}
+  .capo-notice{margin:10px 20px 0}
+  .note-panel{margin:0 20px 0}
+  .song-title{font-size:20px}
+  .print-btn{display:none}
+}
 
-  /* Chord+lyric lines */
-  .line-block {
-    display: block;
-    margin-bottom: 2px;
-  }
-
-  .song-body {
-    padding: 24px 40px 60px;
-    flex: 1;
-    overflow-x: auto;
-    font-size: 15px; /* tamaño base; JS lo modifica */
-  }
-
-  .chord-line {
-    color: var(--chord);
-    font-weight: 700;
-    font-size: 1em;   /* hereda el tamaño del song-body */
-    letter-spacing: 0.02em;
-    display: block;
-    white-space: pre;
-  }
-
-  .lyric-line {
-    color: var(--text);
-    font-size: 1em;   /* hereda el tamaño del song-body */
-    display: block;
-    white-space: pre;
-    line-height: 1.7;
-  }
-
-  .empty-line {
-    display: block;
-    height: 12px;
-  }
-
-  /* ── View selector (Todas / Mis listas) ── */
-  .view-selector {
-    display: flex;
-    margin: 10px 14px 4px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 3px;
-    gap: 3px;
-    flex-shrink: 0;
-  }
-  .view-tab {
-    flex: 1;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 7px 0;
-    transition: background 0.18s, color 0.18s;
-  }
-  .view-tab.active {
-    background: var(--accent);
-    color: #fff;
-  }
-  .view-tab:not(.active):hover { color: var(--text); }
-
-  /* ── Playlist toolbar ── */
-  .pl-toolbar {
-    padding: 10px 14px 6px;
-    flex-shrink: 0;
-  }
-  .pl-new-btn {
-    width: 100%;
-    background: none;
-    border: 1.5px dashed var(--border);
-    border-radius: 9px;
-    color: var(--accent2);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 9px 0;
-    transition: border-color 0.18s, background 0.18s;
-    letter-spacing: 0.01em;
-  }
-  .pl-new-btn:hover { border-color: var(--accent); background: var(--surface2); }
-
-  /* Selector de lista activa */
-  .pl-selector-wrap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 14px 8px;
-    flex-shrink: 0;
-  }
-  .pl-select {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 7px 10px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.18s;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888899' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 28px;
-  }
-  .pl-select:focus { border-color: var(--accent); }
-  .pl-delete-btn {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 15px;
-    padding: 6px 9px;
-    transition: border-color 0.18s, color 0.18s;
-    line-height: 1;
-    min-height: 36px;
-  }
-  .pl-delete-btn:hover { border-color: #ef4444; color: #ef4444; }
-
-  /* Empty state */
-  .pl-empty {
-    padding: 40px 24px;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 13px;
-    line-height: 1.7;
-  }
-
-  /* ── Song item en playlist (con flechas y botón quitar) ── */
-  .song-item-pl {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 6px 10px 6px 14px;
-    border-left: 3px solid transparent;
-    transition: background 0.15s;
-  }
-  .song-item-pl:hover { background: var(--surface2); }
-  .song-item-pl.active { background: var(--surface2); border-left-color: var(--accent); }
-
-  .song-item-pl-info {
-    flex: 1;
-    min-width: 0;
-    cursor: pointer;
-    padding: 5px 0;
-  }
-
-  /* Flechas de orden */
-  .pl-arrows {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex-shrink: 0;
-    margin-right: 4px;
-  }
-  .pl-arrow {
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    color: var(--text-muted);
-    cursor: pointer;
-    width: 28px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    line-height: 1;
-    flex-shrink: 0;
-  }
-  .pl-arrow:hover:not(:disabled) {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  .pl-arrow:disabled { opacity: 0.2; cursor: default; }
-
-  /* Botón quitar de lista */
-  .pl-remove-btn {
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    color: var(--text-muted);
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    flex-shrink: 0;
-    margin-left: 2px;
-    line-height: 1;
-  }
-  .pl-remove-btn:hover {
-    background: #2d1515;
-    border-color: #ef4444;
-    color: #ef4444;
-  }
-
-  /* Botón "Agregar a lista" en cada canción del panel Todas */
-  .song-item-add-btn {
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    color: var(--text-muted);
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    flex-shrink: 0;
-    line-height: 1;
-    opacity: 0;
-    transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
-  }
-  .song-item:hover .song-item-add-btn,
-  .song-item-add-btn:focus { opacity: 1; }
-  .song-item-add-btn:hover {
-    background: var(--surface2);
-    border-color: var(--accent);
-    color: var(--accent2);
-  }
-
-  /* Ajustar song-item para acomodar el botón */
-  .song-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .song-item-info { flex: 1; min-width: 0; }
-
-  /* ── Modal ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65);
-    z-index: 200;
-    backdrop-filter: blur(3px);
-  }
-  .modal-overlay.show { display: block; }
-  .modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.96);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    z-index: 201;
-    width: min(340px, calc(100vw - 32px));
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-    transition: transform 0.2s, opacity 0.2s;
-    opacity: 0;
-  }
-  .modal.show {
-    display: block;
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  .modal-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--accent2);
-    margin-bottom: 6px;
-  }
-  .modal-song-name {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 16px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .modal-pl-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-  .modal-pl-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .modal-pl-item:hover { border-color: var(--accent); background: #1f1f2e; }
-  .modal-pl-item.already-in {
-    border-color: var(--accent);
-    color: var(--accent2);
-    cursor: default;
-  }
-  .modal-pl-item.already-in:hover { background: var(--surface2); }
-  .modal-pl-badge {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 400;
-  }
-  .modal-pl-item.already-in .modal-pl-badge { color: var(--accent); }
-  .modal-no-lists {
-    color: var(--text-muted);
-    font-size: 13px;
-    text-align: center;
-    padding: 12px 0;
-  }
-  .modal-close {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 13px;
-    padding: 10px;
-    transition: border-color 0.15s;
-  }
-  .modal-close:hover { border-color: var(--accent); color: var(--text); }
-
-  /* ── Song title row (título + iconos) ── */
-  .song-title-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 2px;
-  }
-  .song-title-row .song-title { flex: 1; }
-
-  .song-header-icons {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-    padding-top: 4px;
-  }
-
-  /* Botón pin (guardar tono) */
-  .pin-btn {
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s, border-color 0.15s, transform 0.15s;
-    line-height: 1;
-    color: var(--text-muted);
-  }
-  .pin-btn:hover { background: var(--surface2); border-color: var(--border); }
-  .pin-btn.pinned {
-    color: var(--chord);
-    border-color: var(--chord);
-    background: #1e1a0e;
-  }
-  .pin-btn.pinned:hover { background: #2a240f; }
-
-  /* Botón nota */
-  .note-toggle-btn {
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s, border-color 0.15s;
-    line-height: 1;
-  }
-  .note-toggle-btn:hover { background: var(--surface2); border-color: var(--border); }
-  .note-toggle-btn.has-note {
-    border-color: var(--accent);
-    background: #1a1830;
-  }
-  .note-toggle-btn.has-note:hover { background: #22204a; }
-
-  /* Panel de notas */
-  .note-panel {
-    margin: 0 40px 0;
-    background: #15152a;
-    border: 1px solid var(--accent);
-    border-radius: 10px;
-    overflow: hidden;
-    animation: slideDown 0.2s ease;
-  }
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .note-panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 14px;
-    background: #1e1d3a;
-    border-bottom: 1px solid var(--border);
-  }
-  .note-panel-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--accent2);
-    letter-spacing: 0.04em;
-  }
-  .note-panel-close {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 2px 6px;
-    border-radius: 5px;
-    transition: background 0.15s, color 0.15s;
-  }
-  .note-panel-close:hover { background: var(--surface2); color: var(--text); }
-  .note-textarea {
-    width: 100%;
-    min-height: 80px;
-    max-height: 160px;
-    background: transparent;
-    border: none;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    padding: 12px 14px;
-    resize: vertical;
-    outline: none;
-    line-height: 1.6;
-  }
-  .note-textarea::placeholder { color: var(--text-muted); }
-
-  /* Iconos en lista de canciones */
-  .song-item-badges {
-    display: flex;
-    gap: 3px;
-    flex-shrink: 0;
-    align-items: center;
-  }
-  .badge-pin  { font-size: 12px; opacity: 0.8; }
-  .badge-note { font-size: 12px; opacity: 0.8; }
-
-  /* Ocultar nota en impresión */
-  @media print {
-    .note-panel, .note-toggle-btn, .pin-btn, .song-header-icons { display: none !important; }
-  }
-
-  /* ── Print ── */
-  @media print {
-    body { background: #fff !important; color: #000 !important; }
-    .sidebar, .sidebar-overlay, .topbar,
-    .song-header .transpose-group,
-    .song-header .reset-btn,
-    .song-header .print-btn { display: none !important; }
-    .app { display: block; }
-    .main { overflow: visible; }
-    .song-view { display: flex !important; }
-    .welcome { display: none !important; }
-    .song-header {
-      position: static;
-      background: #fff;
-      border-bottom: 2px solid #000;
-      padding: 16px 24px;
-    }
-    .song-title { color: #000; font-size: 22px; }
-    .song-artist { color: #444; }
-    .key-badge { border-color: #ccc; color: #444; }
-    .key-badge span { color: #b45309; }
-    .song-body { padding: 16px 24px 32px; }
-    .section-label { color: #7c3aed; }
-    .chord-line { color: #b45309 !important; }
-    .lyric-line { color: #000 !important; }
-    .capo-notice { color: #92400e; border-color: #fbbf24; background: #fffbeb; display: block; margin: 8px 24px; }
-  }
-
-  /* ══════════════════════════════════════════
-     iPad (portrait & landscape) — 641px-1024px
-     ══════════════════════════════════════════ */
-  @media (max-width: 1024px) {
-    .sidebar { width: 260px; }
-    .song-header { padding: 20px 28px 18px; }
-    .song-body { padding: 20px 28px 60px; }
-    .capo-notice { margin: 12px 28px 0; }
-  }
-
-  /* iPad portrait — sidebar se convierte en drawer */
-  @media (max-width: 768px) {
-    .topbar { display: flex; }
-    .sidebar-close { display: block; }
-
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: 300px;
-      transform: translateX(-100%);
-      box-shadow: 4px 0 32px rgba(0,0,0,0.5);
-    }
-    .sidebar.open { transform: translateX(0); }
-
-    /* El song-header ya no es sticky porque el topbar lo reemplaza */
-    .song-header {
-      position: static;
-      padding: 16px 20px 14px;
-    }
-    .song-body { padding: 16px 20px 80px; }
-    .capo-notice { margin: 10px 20px 0; }
-    .note-panel { margin: 0 20px 0; }
-    .song-title { font-size: 20px; }
-    .print-btn { display: none; }
-  }
-
-  /* ══════════════════════════════════════════
-     Móvil — hasta 480px
-     ══════════════════════════════════════════ */
-  @media (max-width: 480px) {
-    .song-title { font-size: 18px; }
-    .song-meta { gap: 8px; }
-    .key-badge { font-size: 12px; padding: 4px 10px; }
-    .transpose-display { min-width: 54px; font-size: 12px; }
-    .transpose-btn { padding: 6px 12px; font-size: 18px; }
-    .chord-line { font-size: 1em; }
-    .lyric-line { font-size: 14px; }
-    /* Scroll horizontal para líneas largas en pantallas pequeñas */
-    .song-body { padding: 14px 14px 80px; }
-    .capo-notice { margin: 8px 14px 0; font-size: 12px; }
-    .section-label { font-size: 10px; }
-    .topbar { padding: 10px 14px; }
-    .topbar-title { font-size: 14px; }
-  }
+@media (max-width:480px){
+  .song-title{font-size:18px}
+  .song-meta{gap:8px}
+  .key-badge{font-size:12px;padding:4px 10px}
+  .transpose-display{min-width:54px;font-size:12px}
+  .transpose-btn{padding:6px 12px;font-size:18px}
+  .song-body{padding:14px 14px 80px;overflow-x:auto}
+  .capo-notice{margin:8px 14px 0;font-size:12px}
+  .cl-section{font-size:10px}
+  .topbar{padding:10px 14px}
+  .topbar-title{font-size:14px}
+  /* En móvil pequeño: desactivar nowrap para que haga scroll horizontal por línea */
+  .cl-line{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
 </style>
 </head>
 <body>
 <div class="app">
-
-  <!-- Overlay para cerrar sidebar en móvil -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
   <!-- ── SIDEBAR ── -->
@@ -1008,34 +338,28 @@
       </div>
       <button class="sidebar-close" onclick="closeSidebar()" aria-label="Cerrar menú">✕</button>
     </div>
-
-    <!-- Selector de vista -->
     <div class="view-selector">
       <button class="view-tab active" id="tabAll" onclick="switchView('all')">Todas</button>
       <button class="view-tab" id="tabPlaylists" onclick="switchView('playlists')">Mis listas</button>
     </div>
-
-    <!-- Panel: todas las canciones -->
-    <div id="panelAll" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
+    <div id="panelAll" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
       <input class="sidebar-search" type="text" placeholder="Buscar canción..." id="searchInput" oninput="filterSongs(this.value)"/>
       <div class="song-list" id="songList"></div>
     </div>
-
-    <!-- Panel: listas -->
-    <div id="panelPlaylists" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
+    <div id="panelPlaylists" style="display:none;flex-direction:column;flex:1;overflow:hidden">
       <div class="pl-toolbar">
         <button class="pl-new-btn" onclick="createPlaylist()">＋ Nueva lista</button>
       </div>
-      <div class="pl-selector-wrap" id="plSelectorWrap" style="display:none;">
+      <div class="pl-selector-wrap" id="plSelectorWrap" style="display:none">
         <select class="pl-select" id="plSelect" onchange="selectPlaylist(this.value)"></select>
         <button class="pl-delete-btn" onclick="deletePlaylist()" title="Eliminar lista">🗑</button>
       </div>
       <div class="song-list" id="playlistSongList"></div>
-      <div class="pl-empty" id="plEmpty" style="display:none;">No tienes listas aún.<br>Crea una con el botón de arriba.</div>
+      <div class="pl-empty" id="plEmpty" style="display:none">No tienes listas aún.<br>Crea una con el botón de arriba.</div>
     </div>
   </nav>
 
-  <!-- Modal: agregar canción a lista -->
+  <!-- Modal agregar a lista -->
   <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
   <div class="modal" id="addToListModal">
     <div class="modal-title">Agregar a lista</div>
@@ -1046,15 +370,22 @@
 
   <!-- ── MAIN ── -->
   <main class="main" id="mainArea">
-    <!-- Topbar visible solo en tablet/móvil -->
     <div class="topbar" id="topbar">
       <button class="topbar-menu-btn" onclick="openSidebar()" aria-label="Abrir menú">☰</button>
       <span class="topbar-title">✝ Cantoral RiseUp 2026</span>
     </div>
-    <div class="welcome" id="welcomeScreen">
+
+    <!-- Estado de carga -->
+    <div class="loading-screen" id="loadingScreen">
+      <div class="loading-spinner"></div>
+      <span>Cargando cantoral…</span>
+    </div>
+
+    <div class="welcome" id="welcomeScreen" style="display:none">
       <div class="welcome-icon">🎸</div>
       <div class="welcome-text">Selecciona una canción</div>
     </div>
+
     <div class="song-view" id="songView">
       <div class="song-header" id="songHeader">
         <button class="header-toggle" id="headerToggle" onclick="toggleHeader()">▲ Ocultar</button>
@@ -1085,8 +416,7 @@
         </div>
       </div>
       <div class="capo-notice" id="capoNotice"></div>
-      <!-- Panel de notas personales -->
-      <div class="note-panel" id="notePanel" style="display:none;">
+      <div class="note-panel" id="notePanel" style="display:none">
         <div class="note-panel-header">
           <span class="note-panel-label">📝 Notas personales</span>
           <button class="note-panel-close" onclick="toggleNotePanel()">✕</button>
@@ -1098,96 +428,189 @@
       <div class="song-body" id="songBody"></div>
     </div>
   </main>
-
 </div>
 
 <script>
-// ══════════════════════════════════════════════
-//  TRANSPOSITION ENGINE
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN — edita esta URL para apuntar a tu repo
+// ══════════════════════════════════════════════════════════════════
+
+// URL del songs.json en tu repo de GitHub (raw content)
+// Formato: https://raw.githubusercontent.com/USUARIO/REPO/RAMA/songs.json
+const SONGS_JSON_URL = "https://raw.githubusercontent.com/A01568916/Cantoral-Catolico/main/songs.json";
+// ══════════════════════════════════════════════════════════════════
+//  TRANSPOSICIÓN
+// ══════════════════════════════════════════════════════════════════
 
 const SHARPS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const FLATS  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 
-const ENHARMONIC = {
-  'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#',
-  'C#':'Db','D#':'Eb','F#':'Gb','G#':'Ab','A#':'Bb'
+const ENHARMONIC_FIX = {
+  'E#':'F','B#':'C','C##':'D','D##':'E','F##':'G','G##':'A','A##':'B'
 };
 
 function noteIndex(note) {
-  let idx = SHARPS.indexOf(note);
-  if (idx === -1) idx = FLATS.indexOf(note);
-  return idx;
+  let i = SHARPS.indexOf(note);
+  if (i === -1) i = FLATS.indexOf(note);
+  return i;
 }
-
-// Always use sharps
-const FLAT_KEYS = [];
 
 function transposeNote(note, semitones, preferFlats) {
   const idx = noteIndex(note);
   if (idx === -1) return note;
   const newIdx = ((idx + semitones) % 12 + 12) % 12;
-  let transposed = preferFlats ? FLATS[newIdx] : SHARPS[newIdx];
-
-  // Normalize invalid sharps to their equivalent notes
-  const invalidSharps = {
-    'E#': 'F',
-    'C##': 'D',
-    'D##': 'E',
-    'F##': 'G',
-    'G##': 'A',
-    'A##': 'B',
-    'B#': 'C'
-  };
-
-  return invalidSharps[transposed] || transposed;
+  const result = preferFlats ? FLATS[newIdx] : SHARPS[newIdx];
+  return ENHARMONIC_FIX[result] || result;
 }
 
-// Matches chord symbols like: C, Cm, C#, Db, Cmaj7, C/E, G#m7, etc.
-const CHORD_RE = /\b([A-G][b#]?)((?:maj|min|m|sus|add|aug|dim|M)?[0-9]?(?:maj|min|m|sus|add|aug|dim)?[0-9]?)((?:\/[A-G][b#]?)?)\b/g;
+// Regex para encontrar acordes en el formato [Acorde]
+const INLINE_CHORD_RE = /\[([A-G][b#]?(?:(?:maj|min|m|sus|add|aug|dim|M)?[0-9]{0,2}(?:maj|min|m|sus|add|aug|dim)?[0-9]{0,2})(?:\/[A-G][b#]?)?)\]/g;
 
-function transposeChordLine(line, semitones, preferFlats) {
-  return line.replace(CHORD_RE, (match, root, qual, bass) => {
+function transposeChord(chord, semitones, preferFlats) {
+  // chord puede ser "C#m7/E" → transposemos raíz y bajo
+  const bassIdx = chord.indexOf('/');
+  let root, quality, bass;
+  if (bassIdx !== -1) {
+    const rootPart = chord.slice(0, bassIdx);
+    bass = chord.slice(bassIdx + 1);
+    const rm = rootPart.match(/^([A-G][b#]?)(.*)/);
+    root = rm ? rm[1] : rootPart;
+    quality = rm ? rm[2] : '';
     const newRoot = transposeNote(root, semitones, preferFlats);
-    let newBass = bass;
-    if (bass && bass.length > 1) {
-      const bassNote = bass.slice(1);
-      newBass = '/' + transposeNote(bassNote, semitones, preferFlats);
-    }
-    return newRoot + qual + newBass;
-  });
+    const newBass = transposeNote(bass, semitones, preferFlats);
+    return newRoot + quality + '/' + newBass;
+  } else {
+    const rm = chord.match(/^([A-G][b#]?)(.*)/);
+    root = rm ? rm[1] : chord;
+    quality = rm ? rm[2] : '';
+    const newRoot = transposeNote(root, semitones, preferFlats);
+    return newRoot + quality;
+  }
 }
 
 function getTransposedKey(originalKey, semitones) {
   if (!originalKey) return '';
-  const cleaned = originalKey.replace(/[()]/g,'').trim();
+  const cleaned = originalKey.replace(/[()]/g, '').trim();
   const idx = noteIndex(cleaned);
   if (idx === -1) return originalKey;
   const newIdx = ((idx + semitones) % 12 + 12) % 12;
-  const pref = FLAT_KEYS.includes(cleaned);
-  return pref ? FLATS[newIdx] : SHARPS[newIdx];
+  return SHARPS[newIdx];
 }
 
-// ══════════════════════════════════════════════
-//  CHORD-LINE DETECTION
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+//  RENDERIZADOR DE ACORDES INLINE — el corazón del sistema
+// ══════════════════════════════════════════════════════════════════
 
-function isChordLine(line) {
-  // A line is a chord line if it contains mostly chord tokens and spaces
-  const trimmed = line.trim();
-  if (!trimmed) return false;
-  // Remove all valid chord patterns and separators
-  const stripped = trimmed.replace(CHORD_RE, '').replace(/[-–,/\s|()x[\]#*.\\]+/g, '');
-  // If very little remains, it's a chord line
-  return stripped.length <= Math.max(2, trimmed.length * 0.15);
+/*
+  Formato de entrada: "[Dm]Por tu iglesia que te [A#]espera"
+  
+  Genera HTML donde cada acorde flota ENCIMA de la palabra
+  correspondiente usando position:absolute, sin depender de
+  fuentes monoespaciadas ni de contar espacios.
+  
+  Funciona igual en laptop y en celular.
+*/
+
+function renderChordLine(rawLine, semitones, preferFlats) {
+  // rawLine tiene el formato "[Chord]text [Chord]text ..."
+  const parts = [];
+  let lastIndex = 0;
+  let re = new RegExp(INLINE_CHORD_RE.source, 'g');
+  let match;
+
+  while ((match = re.exec(rawLine)) !== null) {
+    // Texto antes del acorde
+    const textBefore = rawLine.slice(lastIndex, match.index);
+    if (textBefore) parts.push({ type: 'text', value: textBefore });
+    // El acorde
+    const chordRaw = match[1];
+    const chordTransposed = semitones !== 0
+      ? transposeChord(chordRaw, semitones, preferFlats)
+      : chordRaw;
+    parts.push({ type: 'chord', value: chordTransposed });
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Texto después del último acorde
+  const textAfter = rawLine.slice(lastIndex);
+  if (textAfter) parts.push({ type: 'text', value: textAfter });
+
+  if (parts.length === 0) return null;
+
+  // ¿Hay algún acorde?
+  const hasChord = parts.some(p => p.type === 'chord');
+  if (!hasChord) return null; // línea solo de texto → manejar afuera
+
+  // Construir la línea: agrupamos cada (acorde + texto_siguiente) en .cl-segment
+  const line = document.createElement('span');
+  line.className = 'cl-line';
+
+  let i = 0;
+  while (i < parts.length) {
+    const part = parts[i];
+
+    if (part.type === 'chord') {
+      // Crear segmento: acorde + texto que le sigue
+      const seg = document.createElement('span');
+      seg.className = 'cl-segment';
+
+      const chordEl = document.createElement('span');
+      chordEl.className = 'cl-chord';
+      chordEl.textContent = part.value;
+      seg.appendChild(chordEl);
+
+      // Texto inmediatamente después (si es texto)
+      if (i + 1 < parts.length && parts[i + 1].type === 'text') {
+        const word = parts[i + 1].value;
+        const wordEl = document.createElement('span');
+        wordEl.className = 'cl-word';
+        // Reservar espacio mínimo: el acorde debe "aterrizar" sobre algo
+        wordEl.textContent = word || '\u00A0'; // non-breaking space si vacío
+        // Ajuste: si el acorde es más largo que la palabra, añadir espacio
+        seg.appendChild(wordEl);
+        i += 2;
+      } else {
+        // Acorde sin texto debajo — añadir espacio para que el chord tenga ancho
+        const wordEl = document.createElement('span');
+        wordEl.className = 'cl-word';
+        wordEl.textContent = '\u00A0\u00A0'; // dos espacios
+        seg.appendChild(wordEl);
+        i += 1;
+      }
+      line.appendChild(seg);
+    } else {
+      // Texto libre (antes del primer acorde)
+      const textEl = document.createElement('span');
+      textEl.className = 'cl-word';
+      textEl.textContent = part.value;
+      line.appendChild(textEl);
+      i++;
+    }
+  }
+
+  return line;
 }
 
-// ══════════════════════════════════════════════
-//  RENDER
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+//  DETECCIÓN: ¿es una línea solo de acordes sin letra?
+// ══════════════════════════════════════════════════════════════════
+
+function hasInlineChords(line) {
+  return INLINE_CHORD_RE.test(line);
+}
+// Reset lastIndex after test
+function hasInlineChordsClean(line) {
+  const re = new RegExp(INLINE_CHORD_RE.source);
+  return re.test(line);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RENDER COMPLETO DEL CANTO
+// ══════════════════════════════════════════════════════════════════
 
 let currentSongIdx = null;
 let currentSemitones = 0;
+let SONGS = [];
 
 function renderSong(idx, semitones) {
   const song = SONGS[idx];
@@ -1220,77 +643,156 @@ function renderSong(idx, semitones) {
   body.innerHTML = '';
 
   const lines = song.content.split('\n');
-  let i = 0;
-  while (i < lines.length) {
-    const raw = lines[i];
+
+  for (const raw of lines) {
     const trimmed = raw.trim();
 
-    // Section label: [Verso], [Coro], etc.
-    if (/^\[.+\]$/.test(trimmed)) {
-      const lbl = document.createElement('div');
-      lbl.className = 'section-label';
-      lbl.textContent = trimmed.slice(1, -1);
-      body.appendChild(lbl);
-      i++;
-      continue;
-    }
-
-    // Empty line
+    // Línea vacía
     if (!trimmed) {
       const emp = document.createElement('span');
-      emp.className = 'empty-line';
+      emp.className = 'cl-empty';
       body.appendChild(emp);
-      i++;
       continue;
     }
 
-    // Chord line: look ahead for a lyric line
-    if (isChordLine(raw)) {
-      const chordRaw = raw;
-      const lyricRaw = (i + 1 < lines.length && !isChordLine(lines[i+1]) && lines[i+1].trim() !== '' && !/^\[.+\]$/.test(lines[i+1].trim()))
-        ? lines[i+1] : null;
+    // Sección [Verso], [Coro], etc.
+    if (/^\[.+\]$/.test(trimmed)) {
+      const lbl = document.createElement('span');
+      lbl.className = 'cl-section';
+      lbl.textContent = trimmed.slice(1, -1);
+      body.appendChild(lbl);
+      continue;
+    }
 
-      const chordTransposed = transposeChordLine(chordRaw, semitones, preferFlats);
-
-      const block = document.createElement('span');
-      block.className = 'line-block';
-
-      const cl = document.createElement('span');
-      cl.className = 'chord-line';
-      cl.textContent = chordTransposed;
-      block.appendChild(cl);
-
-      if (lyricRaw !== null) {
-        const ll = document.createElement('span');
-        ll.className = 'lyric-line';
-        ll.textContent = lyricRaw;
-        block.appendChild(ll);
-        i += 2;
-      } else {
-        i++;
+    // ¿Línea con acordes inline?
+    if (hasInlineChordsClean(trimmed)) {
+      // Transponer todos los acordes en la línea
+      let processedLine = trimmed;
+      if (semitones !== 0) {
+        processedLine = trimmed.replace(
+          new RegExp(INLINE_CHORD_RE.source, 'g'),
+          (_, chord) => '[' + transposeChord(chord, semitones, preferFlats) + ']'
+        );
       }
-
-      body.appendChild(block);
-      continue;
+      const lineEl = renderChordLine(processedLine, 0, preferFlats); // ya transpuesto
+      if (lineEl) {
+        body.appendChild(lineEl);
+        continue;
+      }
     }
 
-    // Plain lyric line
+    // Línea de solo texto (letra sin acordes, o acordes standalone tipo intro)
     const ll = document.createElement('span');
-    ll.className = 'lyric-line';
-    ll.textContent = raw;
+
+    // ¿Es una línea de puros acordes sin corchetes? (estilo: "Dm A# F Am")
+    // El script de migración los deja como texto plano si no tienen letra debajo
+    // En ese caso los mostramos como cl-chord-only
+    const chordOnlyRe = /^([A-G][b#]?(?:(?:maj|min|m|sus|add|aug|dim|M)?[0-9]{0,2}(?:\/[A-G][b#]?)?)[\s\-–|x234()\[\].,]*)+$/;
+    if (chordOnlyRe.test(trimmed)) {
+      ll.className = 'cl-chord-only';
+      // Transponer si hace falta
+      if (semitones !== 0) {
+        ll.textContent = trimmed.replace(
+          /([A-G][b#]?)((?:maj|min|m|sus|add|aug|dim|M)?[0-9]{0,2}(?:\/[A-G][b#]?)?)/g,
+          (match, root, qual) => {
+            const bassMatch = qual.match(/\/([A-G][b#]?)/);
+            if (bassMatch) {
+              const baseQual = qual.slice(0, qual.indexOf('/'));
+              return transposeNote(root, semitones, preferFlats) + baseQual + '/' + transposeNote(bassMatch[1], semitones, preferFlats);
+            }
+            return transposeNote(root, semitones, preferFlats) + qual;
+          }
+        );
+      } else {
+        ll.textContent = trimmed;
+      }
+    } else {
+      ll.className = 'cl-lyric-only';
+      ll.textContent = raw; // mantener indentación original para letra
+    }
     body.appendChild(ll);
-    i++;
   }
 }
+
+// ══════════════════════════════════════════════════════════════════
+//  CARGA DE SONGS.JSON DESDE GITHUB
+// ══════════════════════════════════════════════════════════════════
+
+async function loadSongs() {
+  const loadingEl = document.getElementById('loadingScreen');
+  const welcomeEl = document.getElementById('welcomeScreen');
+
+  // Primero intentar desde caché local
+  const cached = localStorage.getItem('cantoral_songs_cache');
+  const cachedTime = localStorage.getItem('cantoral_songs_cache_time');
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+  if (cached && cachedTime && (Date.now() - parseInt(cachedTime)) < CACHE_TTL) {
+    try {
+      SONGS = JSON.parse(cached);
+      console.log(`Cargados ${SONGS.length} cantos desde caché`);
+      loadingEl.style.display = 'none';
+      welcomeEl.style.display = '';
+      buildSongList();
+      return;
+    } catch (e) {
+      // caché corrupta, continuar con red
+    }
+  }
+
+  try {
+    const url = SONGS_JSON_URL + '?t=' + Date.now(); // evitar caché del navegador
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    SONGS = await resp.json();
+
+    // Guardar en caché
+    localStorage.setItem('cantoral_songs_cache', JSON.stringify(SONGS));
+    localStorage.setItem('cantoral_songs_cache_time', Date.now().toString());
+
+    console.log(`Cargados ${SONGS.length} cantos desde GitHub`);
+    loadingEl.style.display = 'none';
+    welcomeEl.style.display = '';
+    buildSongList();
+  } catch (err) {
+    console.error('Error cargando songs.json:', err);
+
+    // Si hay caché aunque sea vieja, usarla
+    if (cached) {
+      try {
+        SONGS = JSON.parse(cached);
+        loadingEl.innerHTML = `<div style="color:var(--chord);font-size:13px;text-align:center;padding:20px">
+          ⚠️ Sin conexión — mostrando cantoral guardado localmente
+        </div>`;
+        setTimeout(() => {
+          loadingEl.style.display = 'none';
+          welcomeEl.style.display = '';
+          buildSongList();
+        }, 2000);
+        return;
+      } catch (e2) {}
+    }
+
+    loadingEl.innerHTML = `<div class="loading-error">
+      ❌ No se pudo cargar el cantoral.<br><br>
+      Verifica que la URL en el código apunta a tu repositorio de GitHub.<br><br>
+      <small style="opacity:.6">${err.message}</small>
+    </div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  UI — Lista de canciones, vista, transponer
+// ══════════════════════════════════════════════════════════════════
+
+let currentView = 'all';
+let activePlIdx = 0;
 
 function showSong(idx) {
   currentSongIdx = idx;
   currentSemitones = 0;
-
-  // Cargar tono guardado y estado de notas
   loadSongExtras(idx);
 
-  // Refrescar lista activa
   if (currentView === 'all') {
     buildSongList(document.getElementById('searchInput').value);
   } else {
@@ -1299,47 +801,33 @@ function showSong(idx) {
   }
 
   document.getElementById('welcomeScreen').style.display = 'none';
-  const sv = document.getElementById('songView');
-  sv.classList.add('visible');
-
+  document.getElementById('songView').classList.add('visible');
   renderSong(idx, currentSemitones);
-
   document.getElementById('mainArea').scrollTo(0, 0);
   if (window.innerWidth <= 768) closeSidebar();
 }
 
-// ── Colapsar/expandir encabezado de canción
 function toggleHeader() {
   const header = document.getElementById('songHeader');
   const btn    = document.getElementById('headerToggle');
-  const collapsible = document.getElementById('songCollapsible');
+  const col    = document.getElementById('songCollapsible');
   const isCollapsed = header.classList.contains('collapsed');
-
   if (isCollapsed) {
-    // Expandir: primero fijamos max-height al scrollHeight real
     header.classList.remove('collapsed');
-    collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
+    col.style.maxHeight = col.scrollHeight + 'px';
     btn.textContent = '▲ Ocultar';
-    // Tras la transición, quitamos el valor inline para que sea fluido si cambia el contenido
-    collapsible.addEventListener('transitionend', function onEnd() {
-      collapsible.style.maxHeight = '';
-      collapsible.removeEventListener('transitionend', onEnd);
+    col.addEventListener('transitionend', function h() {
+      col.style.maxHeight = ''; col.removeEventListener('transitionend', h);
     });
   } else {
-    // Colapsar: fijamos primero el valor actual, luego lo llevamos a 0
-    collapsible.style.maxHeight = collapsible.scrollHeight + 'px';
-    // Forzar repaint antes de cambiar a 0
-    collapsible.getBoundingClientRect();
-    collapsible.style.maxHeight = '0px';
+    col.style.maxHeight = col.scrollHeight + 'px';
+    col.getBoundingClientRect();
+    col.style.maxHeight = '0px';
     header.classList.add('collapsed');
     btn.textContent = '▼ Mostrar';
-    collapsible.addEventListener('transitionend', function onEnd() {
-      collapsible.removeEventListener('transitionend', onEnd);
-    });
   }
 }
 
-// ── Tamaño de letra
 let currentFontSize = 15;
 function changeFontSize(delta) {
   currentFontSize = Math.min(24, Math.max(10, currentFontSize + delta));
@@ -1353,4093 +841,12 @@ function transpose(delta) {
   renderSong(currentSongIdx, currentSemitones);
   updatePinBtn();
 }
-
 function resetTranspose() {
   if (currentSongIdx === null) return;
   currentSemitones = 0;
   renderSong(currentSongIdx, 0);
   updatePinBtn();
 }
-
-// ══════════════════════════════════════════════
-//  HISTORIAL DE TRANSPOSICIONES (pin)
-// ══════════════════════════════════════════════
-
-function loadTransposeHistory() {
-  try { return JSON.parse(localStorage.getItem('cantoral_transpose') || '{}'); }
-  catch { return {}; }
-}
-function saveTransposeHistory(h) {
-  localStorage.setItem('cantoral_transpose', JSON.stringify(h));
-}
-
-function togglePinTranspose() {
-  if (currentSongIdx === null) return;
-  const h = loadTransposeHistory();
-  const key = String(currentSongIdx);
-
-  if (h[key] !== undefined) {
-    // Ya está pinneado → olvidar
-    delete h[key];
-    saveTransposeHistory(h);
-    updatePinBtn();
-    buildSongList(document.getElementById('searchInput').value);
-  } else {
-    // Pinear el tono actual
-    h[key] = currentSemitones;
-    saveTransposeHistory(h);
-    updatePinBtn();
-    buildSongList(document.getElementById('searchInput').value);
-  }
-}
-
-function updatePinBtn() {
-  const btn = document.getElementById('pinBtn');
-  if (!btn || currentSongIdx === null) return;
-  const h = loadTransposeHistory();
-  const key = String(currentSongIdx);
-  const pinned = h[key] !== undefined;
-  const isCurrentPinned = pinned && h[key] === currentSemitones;
-
-  if (pinned) {
-    btn.textContent = '📌';
-    btn.classList.add('pinned');
-    btn.title = 'Tono guardado — click para olvidar';
-  } else {
-    btn.textContent = '📍';
-    btn.classList.remove('pinned');
-    btn.title = currentSemitones !== 0
-      ? 'Guardar este tono para esta canción'
-      : 'Transpón la canción y guarda tu tono favorito';
-  }
-}
-
-// ══════════════════════════════════════════════
-//  NOTAS PERSONALES
-// ══════════════════════════════════════════════
-
-function loadNotes() {
-  try { return JSON.parse(localStorage.getItem('cantoral_notes') || '{}'); }
-  catch { return {}; }
-}
-function saveNotes(n) {
-  localStorage.setItem('cantoral_notes', JSON.stringify(n));
-}
-
-function saveNote() {
-  if (currentSongIdx === null) return;
-  const notes = loadNotes();
-  const val = document.getElementById('noteTextarea').value;
-  if (val.trim()) {
-    notes[String(currentSongIdx)] = val;
-  } else {
-    delete notes[String(currentSongIdx)];
-  }
-  saveNotes(notes);
-  updateNoteBtn();
-  // Refrescar iconos en la lista
-  if (currentView === 'all') {
-    buildSongList(document.getElementById('searchInput').value);
-  }
-}
-
-function updateNoteBtn() {
-  if (currentSongIdx === null) return;
-  const notes = loadNotes();
-  const hasNote = !!notes[String(currentSongIdx)]?.trim();
-  const btn = document.getElementById('noteToggleBtn');
-  if (hasNote) {
-    btn.classList.add('has-note');
-    btn.title = 'Tienes una nota — click para ver/editar';
-  } else {
-    btn.classList.remove('has-note');
-    btn.title = 'Agregar nota personal';
-  }
-}
-
-function toggleNotePanel() {
-  const panel = document.getElementById('notePanel');
-  const isVisible = panel.style.display !== 'none';
-  panel.style.display = isVisible ? 'none' : 'block';
-  if (!isVisible && currentSongIdx !== null) {
-    const notes = loadNotes();
-    document.getElementById('noteTextarea').value = notes[String(currentSongIdx)] || '';
-    document.getElementById('noteTextarea').focus();
-  }
-}
-
-function loadSongExtras(idx) {
-  // Cargar tono guardado
-  const h = loadTransposeHistory();
-  const saved = h[String(idx)];
-  if (saved !== undefined && saved !== 0) {
-    currentSemitones = saved;
-  }
-
-  // Cerrar panel de notas si estaba abierto
-  document.getElementById('notePanel').style.display = 'none';
-
-  // Actualizar botones
-  updatePinBtn();
-  updateNoteBtn();
-}
-
-// ══════════════════════════════════════════════
-//  SIDEBAR — TODAS LAS CANCIONES
-// ══════════════════════════════════════════════
-
-function buildSongList(filter) {
-  const list = document.getElementById('songList');
-  list.innerHTML = '';
-
-  const transposeH = loadTransposeHistory();
-  const notes      = loadNotes();
-
-  const sorted = SONGS
-    .map((s, i) => ({ s, i }))
-    .filter(({ s }) => !filter ||
-      s.title.toLowerCase().includes(filter.toLowerCase()) ||
-      s.artist.toLowerCase().includes(filter.toLowerCase()))
-    .sort((a, b) => {
-      const isLetter = s => /^[a-záéíóúüñ]/i.test(s);
-      const aL = isLetter(a.s.title), bL = isLetter(b.s.title);
-      if (aL && !bL) return -1;
-      if (!aL && bL) return 1;
-      return a.s.title.localeCompare(b.s.title, 'es');
-    });
-
-  sorted.forEach(({ s, i }) => {
-    const hasPinned = transposeH[String(i)] !== undefined;
-    const hasNote   = !!notes[String(i)]?.trim();
-
-    const el = document.createElement('div');
-    el.className = 'song-item' + (i === currentSongIdx ? ' active' : '');
-    el.innerHTML = `
-      <div class="song-item-info" onclick="showSong(${i})">
-        <div class="song-item-title">${s.title}</div>
-        <div class="song-item-artist">${s.artist}</div>
-      </div>
-      <div class="song-item-badges">
-        ${hasPinned ? '<span class="badge-pin" title="Tono guardado">📌</span>' : ''}
-        ${hasNote   ? '<span class="badge-note" title="Tiene nota">📝</span>' : ''}
-      </div>
-      <button class="song-item-add-btn" onclick="openAddToListModal(${i})" title="Agregar a lista">＋</button>
-    `;
-    list.appendChild(el);
-  });
-}
-
-function filterSongs(val) {
-  buildSongList(val);
-}
-
-// ══════════════════════════════════════════════
-//  VISTA — TODAS / MIS LISTAS
-// ══════════════════════════════════════════════
-
-let currentView = 'all';
-
-function switchView(view) {
-  currentView = view;
-  document.getElementById('panelAll').style.display       = view === 'all'       ? 'flex' : 'none';
-  document.getElementById('panelPlaylists').style.display = view === 'playlists' ? 'flex' : 'none';
-  document.getElementById('tabAll').classList.toggle('active',       view === 'all');
-  document.getElementById('tabPlaylists').classList.toggle('active', view === 'playlists');
-  if (view === 'playlists') renderPlaylistPanel();
-}
-
-// ══════════════════════════════════════════════
-//  PLAYLISTS — DATOS (localStorage)
-// ══════════════════════════════════════════════
-
-function loadPlaylists() {
-  try { return JSON.parse(localStorage.getItem('cantoral_playlists') || '[]'); }
-  catch { return []; }
-}
-function savePlaylists(pls) {
-  localStorage.setItem('cantoral_playlists', JSON.stringify(pls));
-}
-
-let activePlIdx = 0; // índice de la lista activa en el panel
-
-// ══════════════════════════════════════════════
-//  PLAYLISTS — PANEL
-// ══════════════════════════════════════════════
-
-function renderPlaylistPanel() {
-  const pls = loadPlaylists();
-  const wrap   = document.getElementById('plSelectorWrap');
-  const empty  = document.getElementById('plEmpty');
-  const select = document.getElementById('plSelect');
-
-  // Restaurar toolbar siempre (limpia el input si estaba abierto)
-  const toolbar = document.querySelector('.pl-toolbar');
-  const atLimit = pls.length >= 8;
-  toolbar.innerHTML = atLimit
-    ? `<button class="pl-new-btn" disabled
-          style="opacity:0.45;cursor:not-allowed;border-style:solid;"
-          title="Elimina una lista para poder crear otra">
-         Límite de 8 listas alcanzado
-       </button>`
-    : `<button class="pl-new-btn" onclick="createPlaylist()">＋ Nueva lista</button>`;
-
-  // Limpiar confirmación de borrado si quedó abierta
-  document.getElementById('plDeleteConfirm')?.remove();
-
-  if (pls.length === 0) {
-    wrap.style.display  = 'none';
-    empty.style.display = 'block';
-    document.getElementById('playlistSongList').innerHTML = '';
-    return;
-  }
-
-  empty.style.display = 'none';
-  wrap.style.display  = 'flex';
-
-  if (activePlIdx >= pls.length) activePlIdx = pls.length - 1;
-  select.innerHTML = pls.map((p, i) =>
-    `<option value="${i}" ${i === activePlIdx ? 'selected' : ''}>${p.name} (${p.songs.length})</option>`
-  ).join('');
-
-  // Botón renombrar
-  let renameBtn = document.getElementById('plRenameBtn');
-  if (!renameBtn) {
-    renameBtn = document.createElement('button');
-    renameBtn.id = 'plRenameBtn';
-    renameBtn.title = 'Renombrar lista';
-    renameBtn.style.cssText = `background:none;border:1px solid var(--border);border-radius:8px;
-      color:var(--text-muted);cursor:pointer;font-size:14px;padding:6px 9px;
-      transition:border-color 0.18s,color 0.18s;line-height:1;min-height:36px;`;
-    renameBtn.textContent = '✏️';
-    renameBtn.onmouseenter = () => { renameBtn.style.borderColor='var(--accent)'; renameBtn.style.color='var(--accent2)'; };
-    renameBtn.onmouseleave = () => { renameBtn.style.borderColor='var(--border)';  renameBtn.style.color='var(--text-muted)'; };
-    renameBtn.onclick = renamePlaylist;
-    wrap.insertBefore(renameBtn, wrap.querySelector('.pl-delete-btn'));
-  }
-
-  renderPlaylistSongs(pls[activePlIdx]);
-}
-
-function renderPlaylistSongs(pl) {
-  const list = document.getElementById('playlistSongList');
-  list.innerHTML = '';
-
-  if (!pl || pl.songs.length === 0) {
-    list.innerHTML = `<div class="pl-empty" style="display:block;">Esta lista está vacía.<br>Agrega canciones desde "Todas".</div>`;
-    return;
-  }
-
-  pl.songs.forEach((songIdx, pos) => {
-    const s = SONGS[songIdx];
-    if (!s) return;
-    const isFirst = pos === 0;
-    const isLast  = pos === pl.songs.length - 1;
-
-    const el = document.createElement('div');
-    el.className = 'song-item-pl' + (songIdx === currentSongIdx ? ' active' : '');
-    el.innerHTML = `
-      <div class="pl-arrows">
-        <button class="pl-arrow" onclick="moveSong(${pos}, -1)" ${isFirst ? 'disabled' : ''} title="Subir">▲</button>
-        <button class="pl-arrow" onclick="moveSong(${pos},  1)" ${isLast  ? 'disabled' : ''} title="Bajar">▼</button>
-      </div>
-      <div class="song-item-pl-info" onclick="showSong(${songIdx})">
-        <div class="song-item-title">${s.title}</div>
-        <div class="song-item-artist">${s.artist}</div>
-      </div>
-      <button class="pl-remove-btn" onclick="removeSongFromPlaylist(${pos})" title="Quitar de la lista">✕</button>
-    `;
-    list.appendChild(el);
-  });
-}
-
-function selectPlaylist(val) {
-  activePlIdx = parseInt(val);
-  const pls = loadPlaylists();
-  renderPlaylistSongs(pls[activePlIdx]);
-}
-
-// ══════════════════════════════════════════════
-//  PLAYLISTS — ACCIONES
-// ══════════════════════════════════════════════
-
-function createPlaylist() {
-  // Mostrar input inline en lugar de prompt()
-  const toolbar = document.querySelector('.pl-toolbar');
-  if (document.getElementById('plNewInput')) return; // ya abierto
-
-  toolbar.innerHTML = `
-    <div style="display:flex;gap:6px;align-items:center;">
-      <input id="plNewInput" type="text" placeholder="Nombre de la lista..."
-        style="flex:1;background:var(--surface2);border:1.5px solid var(--accent);border-radius:8px;
-               color:var(--text);font-size:13px;padding:8px 10px;outline:none;min-width:0;"
-        onkeydown="if(event.key==='Enter')confirmNewPlaylist();if(event.key==='Escape')cancelNewPlaylist();"
-      />
-      <button onclick="confirmNewPlaylist()"
-        style="background:var(--accent);border:none;border-radius:8px;color:#fff;
-               cursor:pointer;font-size:13px;font-weight:700;padding:8px 12px;white-space:nowrap;">
-        ✓
-      </button>
-      <button onclick="cancelNewPlaylist()"
-        style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-               color:var(--text-muted);cursor:pointer;font-size:13px;padding:8px 10px;">
-        ✕
-      </button>
-    </div>
-  `;
-  document.getElementById('plNewInput').focus();
-}
-
-function confirmNewPlaylist() {
-  const input = document.getElementById('plNewInput');
-  const name = input ? input.value.trim() : '';
-  if (name) {
-    const pls = loadPlaylists();
-    pls.push({ name, songs: [] });
-    savePlaylists(pls);
-    activePlIdx = pls.length - 1;
-  }
-  renderPlaylistPanel(); // esto restaura el toolbar original
-}
-
-function cancelNewPlaylist() {
-  renderPlaylistPanel(); // restaura el toolbar original
-}
-
-function deletePlaylist() {
-  const pls = loadPlaylists();
-  if (!pls.length) return;
-  const name = pls[activePlIdx].name;
-
-  const wrap = document.getElementById('plSelectorWrap');
-  if (document.getElementById('plDeleteConfirm')) return;
-
-  const confirm = document.createElement('div');
-  confirm.id = 'plDeleteConfirm';
-  confirm.style.cssText = 'display:flex;gap:6px;align-items:center;padding:0 14px 8px;flex-shrink:0;';
-  confirm.innerHTML = `
-    <span style="flex:1;font-size:12px;color:var(--text-muted);">¿Eliminar "${name}"?</span>
-    <button onclick="confirmDeletePlaylist()"
-      style="background:#ef4444;border:none;border-radius:8px;color:#fff;
-             cursor:pointer;font-size:12px;font-weight:700;padding:6px 10px;">
-      Sí
-    </button>
-    <button onclick="cancelDeletePlaylist()"
-      style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-             color:var(--text-muted);cursor:pointer;font-size:12px;padding:6px 10px;">
-      No
-    </button>
-  `;
-  wrap.insertAdjacentElement('afterend', confirm);
-}
-
-function renamePlaylist() {
-  const pls = loadPlaylists();
-  if (!pls.length) return;
-  const wrap = document.getElementById('plSelectorWrap');
-  if (document.getElementById('plRenameInput')) return;
-
-  // Ocultar temporalmente el select y los botones
-  wrap.style.flexWrap = 'wrap';
-  const renameRow = document.createElement('div');
-  renameRow.id = 'plRenameInput';
-  renameRow.style.cssText = 'display:flex;gap:6px;align-items:center;width:100%;margin-top:6px;';
-  renameRow.innerHTML = `
-    <input id="plRenameField" type="text" value="${pls[activePlIdx].name}"
-      style="flex:1;background:var(--surface2);border:1.5px solid var(--accent);border-radius:8px;
-             color:var(--text);font-size:13px;padding:7px 10px;outline:none;min-width:0;"
-      onkeydown="if(event.key==='Enter')confirmRename();if(event.key==='Escape')cancelRename();"
-    />
-    <button onclick="confirmRename()"
-      style="background:var(--accent);border:none;border-radius:8px;color:#fff;
-             cursor:pointer;font-size:13px;font-weight:700;padding:7px 12px;">✓</button>
-    <button onclick="cancelRename()"
-      style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-             color:var(--text-muted);cursor:pointer;font-size:13px;padding:7px 10px;">✕</button>
-  `;
-  wrap.appendChild(renameRow);
-  const field = document.getElementById('plRenameField');
-  field.focus();
-  field.select();
-}
-
-function confirmRename() {
-  const field = document.getElementById('plRenameField');
-  const name = field ? field.value.trim() : '';
-  if (name) {
-    const pls = loadPlaylists();
-    pls[activePlIdx].name = name;
-    savePlaylists(pls);
-  }
-  cancelRename();
-}
-
-function cancelRename() {
-  document.getElementById('plRenameInput')?.remove();
-  document.getElementById('plSelectorWrap').style.flexWrap = '';
-  renderPlaylistPanel();
-}
-
-function confirmDeletePlaylist() {
-  const pls = loadPlaylists();
-  pls.splice(activePlIdx, 1);
-  savePlaylists(pls);
-  activePlIdx = Math.max(0, activePlIdx - 1);
-  document.getElementById('plDeleteConfirm')?.remove();
-  renderPlaylistPanel();
-}
-
-function cancelDeletePlaylist() {
-  document.getElementById('plDeleteConfirm')?.remove();
-}
-
-function moveSong(pos, dir) {
-  const pls = loadPlaylists();
-  const pl  = pls[activePlIdx];
-  const newPos = pos + dir;
-  if (newPos < 0 || newPos >= pl.songs.length) return;
-  [pl.songs[pos], pl.songs[newPos]] = [pl.songs[newPos], pl.songs[pos]];
-  savePlaylists(pls);
-  renderPlaylistSongs(pl);
-}
-
-function removeSongFromPlaylist(pos) {
-  const pls = loadPlaylists();
-  const pl  = pls[activePlIdx];
-  pl.songs.splice(pos, 1);
-  savePlaylists(pls);
-  renderPlaylistSongs(pl);
-}
-
-function addSongToPlaylist(plIdx, songIdx) {
-  const pls = loadPlaylists();
-  const pl  = pls[plIdx];
-  if (pl.songs.includes(songIdx)) return;
-  pl.songs.push(songIdx);
-  savePlaylists(pls);
-}
-
-// ══════════════════════════════════════════════
-//  MODAL — AGREGAR A LISTA
-// ══════════════════════════════════════════════
-
-let modalSongIdx = null;
-
-function openAddToListModal(songIdx) {
-  const pls = loadPlaylists();
-  modalSongIdx = songIdx;
-  const song = SONGS[songIdx];
-
-  document.getElementById('modalSongName').textContent = `${song.title} · ${song.artist}`;
-
-  const plList = document.getElementById('modalPlList');
-  if (pls.length === 0) {
-    plList.innerHTML = `<div class="modal-no-lists">No tienes listas aún.<br>Crea una desde "Mis listas".</div>`;
-  } else {
-    plList.innerHTML = pls.map((pl, i) => {
-      const alreadyIn = pl.songs.includes(songIdx);
-      return `
-        <div class="modal-pl-item ${alreadyIn ? 'already-in' : ''}"
-             onclick="${alreadyIn ? '' : `addAndClose(${i})`}">
-          <span>${pl.name}</span>
-          <span class="modal-pl-badge">${alreadyIn ? '✓ Ya está' : pl.songs.length + ' canciones'}</span>
-        </div>`;
-    }).join('');
-  }
-
-  document.getElementById('modalOverlay').classList.add('show');
-  // Pequeño delay para que la transición CSS funcione
-  requestAnimationFrame(() => {
-    document.getElementById('addToListModal').classList.add('show');
-  });
-}
-
-function addAndClose(plIdx) {
-  addSongToPlaylist(plIdx, modalSongIdx);
-  closeModal();
-  // Si el panel de playlists está visible, actualizarlo
-  if (currentView === 'playlists') renderPlaylistPanel();
-}
-
-function closeModal() {
-  document.getElementById('addToListModal').classList.remove('show');
-  document.getElementById('modalOverlay').classList.remove('show');
-  modalSongIdx = null;
-}
-
-// ══════════════════════════════════════════════
-//  SONG DATA
-// ══════════════════════════════════════════════
-
-const SONGS = [
-
-// ─────────────────────────────────────────────
-{
-  title: "Noche",
-  artist: "Hakuna",
-  key: "Dm",
-  capo: "",
-  content: `[Intro]
-Dm A# F Am
-
-[Verso 1]
-       Dm                         A#
-Por tu iglesia que te espera a oscuras
-       F             Am
-Por tu pueblo que te reza aguardando la aurora
-Dm     A#    F   Am
-Te rogamos, te rogamos
-        Dm
-Por las naciones paganas,
-    A#                      F
-que tienen sed de ti sin saberlo
-       Am
-Ten piedad, ten piedad
-
-        Dm                       A#             F
-Por los pueblos oprimidos por el totalitarismo,
-          Am
-Y la opresión de la mentira
-    Dm                          A#
-Por aquellos perseguidos por tu nombre
-                    F
-Que se ocultan para orar
-                  Am
-Y aquellos extraídos de su hogar
-    Dm               A#
-Por sus perseguidores, cegados por el odio
-   F                 Am
-Perdónalos Padre, no saben lo que hacen
- Dm
-Por los que no nos aman
-            A#
-Por los que no sabemos amar
-            F
-Por los que sufren y agonizan
-                Am
-Y hoy duermen en el hospital
-	 Dm
-Por los que hoy es su última noche
-        A#                      F
-Cuyos ojos no verán el nuevo día
-                Am
-Ten piedad, ten piedad
-    Dm                            A#
-Por todos los que sufren la tentación del suicidio,
-            F                       Am
-Por los dispuestos a dejar ganar al mal
-     Dm                   A#
-Por aquellos cuyas noches son interminables
-    F                           Am        A7 A Dm
-Y a los que la angustia les ha quitado la paz
-
-[Estribillo]
-        A#             F     Am A7
-Kyrie Eleison, Kyrie Eleison
-        Dm              A#             F     Am A7
-Kyrie Eleison, Kyrie Eleison, Kyrie Eleison
-
-[Verso 2]
-    Dm
-Por aquellos que trabajan en la prostitución
-     A#
-Y se ven obligados a vender su amor
-     F
-Por los que caen en la trampa
-   Am
-Del vicio y las drogas
-   Dm
-Por los que hoy duermen en prisión
-            A#
-Por los que hoy esperan su ejecución
-    F                   Am
-Por aquellos a los que torturan
-     Dm
-Por criminales, por los ladrones
-            A#
-Por los que erran en soledad
-            F               Am            A7 A Dm
-Por los que sufren la indiferencia de los demás
-
-[Estribillo]
-       A#              F     Am A7
-Kyrie Eleison, Kyrie Eleison
-
-[Verso 3]
-       Dm                       A#
-Por la ciudad, por todos sus habitantes
-           F                   Am
-Que en sus sueños solo existas tú
-Dm
-Por nuestros difuntos,
-         A#
-que aún no han visto tu rostro
-       F                       Am
-Por los alejados entre la multitud
-       Dm                         A#
-Por los niños que descansan en el seno de su madre
-            F                   Am
-Por las mujeres que van a dar a luz
-         Dm                      A#
-Para que reine tu paz en cada hogar
-            F                        Am A Dm
-Por los que quieren saciar su sed de amar
-
-[Estribillo]
-        A#             F     Am A7
-Kyrie Eleison, Kyrie Eleison
-        Dm              A#             F     Am A7
-Kyrie Eleison, Kyrie Eleison, Kyrie Eleison
-
-        Dm
-Ten piedad, ten piedad, ten piedad x3
-
-Ten piedad, señor, ten piedad.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Me sostendrá",
-  artist: "Majo Solís",
-  key: "F",
-  capo: "Capo: Traste 1",
-  content: `[Intro]
-F - C - F - C
-
-[Verso 1]
-          F                         C
-El consuelo para el corazón que llora
-       F                           C
-El aliento cuando ya no queda más
-         F                        C
-La esperanza, el futuro que se acerca
-          Am           C          F
-La confianza de que todo pasará
-
-[Coro]
-      F               C
-Mi ancla firme está
-          Am                       F       G
-No temeré sé que tú conmigo estás.
-       F               C
-Me aferro a tu bondad
-            Am                      F
-Y en el dolor me recuerdas la verdad
-            G              F
-Tu amor a mi me sostendrá.
-
-F - C - F - C
-
-[Verso 2]
-       F                         C
-Tú la paz que supera entendimiento
-       F                           C
-Tú la fuerza que me vuelve a levantar
-         F                         C
-La promesa de que todo lo has vencido
-          Am             C        F
-La confianza de que todo pasará
-         Am           C         F
-La certeza de que todo volverá
-
-[Coro]
-     F             C
-Mi ancla firme está
-         Am                       F      G
-No temeré sé que tú conmigo estás
-       F               C
-Me aferro a tu bondad
-         Am                      F
-En el dolor me recuerdas la verdad
-            G              F
-Tu amor a mi me sostendrá.
-
-[Puente]
-          F                     Am
-En el valle de tinieblas vas frente de mí
-        F                         Am
-Hoy camino en la tormenta mirándote a ti
-      Am          G
-Ehh Ohh Jesús.
-
-[Coro]
-     F             C
-Mi ancla firme está
-         Am                       F      G
-No temeré sé que tú conmigo estás
-       F               C
-Me aferro a tu bondad
-         Am                      F
-En el dolor me recuerdas la verdad
-            G              F
-Tu amor a mi me sostendrá.
-     F                        C
-Tu amor, tu amor, solo tu amor
-
-  Am        G           F
-Tu amor a mí me sostendrá`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Te deseo",
-  artist: "Majo y Dan",
-  key: "E",
-  capo: "",
-  content: `[Verso 1]
-E
-Si mis tesoros han perdido todo su valor
-         A
-Y en este mundo ya no encuentro más satisfacción
-          C#m                        B
-Es porque he probado y he podido ver
-        A
-A Cristo Jesús
-
-[Verso 2]
-E
-Si todo es nada comparado a lo que hay en ti
-          A
-Lo que estimaba ya no es importante para mí
-          C#m                        B
-Es porque he probado y he podido ver
-  A
-A Cristo Jesús
-
-[Coro]
-     E
-Y Te deseo
-Más que a la vida
-   A
-Te deseo
-Más cada día
-   C#m       B
-Te deseo más todavía
-A
-Jesús
-
-[Instrumental]
-E A C#m B A
-
-[Puente]
-   E
-Tú suficiente serás,
-A                   B
-Tú suficiente serás
-C#m                   E
-Hoy y por la eternidad
-A
-Tú suficiente serás
-
-[Coro]
-     E
-Y Te deseo
-Más que a la vida
-   A
-Te deseo
-Más cada día
-   C#m       B
-Te deseo más todavía
-A
-Jesús`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Ocúpate tú de todo",
-  artist: "Hakuna",
-  key: "G",
-  capo: "Capo 3 (suena en Bb)",
-  content: `[Intro]
-D A G A D A
-
-[Verso 1]
-                     D
-Si el sudor me come vivo
-                 G
-Y me cuesta sonreír
-                  A
-Si se suman mis caídas
-                 D  D7
-A propósito sin fin
-                   G       A
-Si me arden en los ojos
-                     Bm   F#m/A
-Mil millones de porqués
-                     G
-Si me ahogan muchos pocos
-  A           D
-Ocúpate tú de todo
-
-[Verso 2]
-         A            D
-Si me aprietan los bolsillos
-                G
-Y no cabe mi reloj
-                   A
-Si prometo y no consigo
-                  D    D7
-Recordar mi vocación
-                     G           A
-Si me cambian las estrellas
-                Bm
-Por un tubo de neón
-     Em7          G
-Si parece que estoy solo
-  A           D
-Ocúpate tú de todo
-
-[Puente]
-A
-Cruces solitarias
-       Bm
-Flores artificiales
-G                      D
-Listas arrojadas al arcén
-A
-Brisas sin caminos
-    Bm
-Horizontes en clave
-    G                  A
-Naufragios sin voz ni voto
-  G     A     D      D7
-Ocúpate tú de todo
-
-           G       A            Bm   Am
-Oh, oh, oh-oh, oh, oh, oh-oh-oh-oh
-D7          G       A            D   D7
-Oh, oh, oh-oh, oh, oh, oh-oh-oh-oh
-
-                   G    A
-Si me arden en los ojos
-                    Bm
-Mil millones de porqués
-        A            G
-Si me ahogan muchos pocos
-    A         Bm
-Ocúpate tú de todo
-     A               G
-Si parece que estoy solo
-  A            D
-Ocúpate tú de todo`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Llévame a la cruz",
-  artist: "Majo y Dan",
-  key: "A",
-  capo: "",
-  content: `[Intro]
-A - F#m - D - F#m - E
-
-[Verso 1]
-A                F#m
-Si mis oraciones hablan más de mí,
-D                       F#m         E
-quiero disculparme, pues se trata de ti
-
-A                    F#m
-Si me he olvidado de lo que un día fui,
-D                       F#m          E
-vuelve a recordarme que nada soy sin ti
-
-[Coro]
-      F#m   E        D
-Ven y llévame a la cruz
-      F#m    E      D
-donde solo existes tú
-
-[Verso 2]
-A                   F#m
-Si me gano el mundo y te pierdo a ti,
-D                   F#m        E
-de nada me vale, tú eres mi vivir
-
-A               F#m
-Eres mi tesoro, eres mi existir,
-   D                  F#m           E
-yo sé que tengo todo si te tengo a ti
-
-[Coro 2]
-      F#m   E/C#     D
-Ven y llévame a la cruz
-      F#m   E/C#    D
-donde solo existes tú
-       F#m     E/C#     D
-hoy me niego a lo que soy,
-      F#m    E      D
-ven y lléname, Señor
-
-[Puente]
-        A
-Ven y llena nuestro corazón,
-       F#m
-Ven y llena nuestro corazón,
-        E                      D
-Ven y llena nuestro corazón, Jesús
-
-[Coro]
-      F#m   E        D
-Ven y llévame a la cruz
-      F#m    E      D
-donde solo existes tú`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Otra vez",
-  artist: "Un Corazón, Kim Richards, LUISFER",
-  key: "Em",
-  capo: "Capo 4 (suena en Gm)",
-  content: `[Intro]
-Em - C - G - D
-
-[Verso 1]
-          C              G
-No te merezco pero te necesito
-         C                       G
-En lo secreto quiero verte otra vez
-              Am7   C  D  Em
-Te escucho decir vuelve a mí
-          Am7 C  D    G       D
-Nunca me fui sigo aquí
-
-[Coro]
-   Em                C
-Jesús a tus brazos regreso
-   G                         D
-Descanso en que estás en control
- Em                    C
-Y aún cuando no lo comprendo
-    G             D
-Confío en tu corazón
-           Em - C - G - D
-// otra vez //
-
-[Verso 2]
-           C                     G
-Y en tu presencia todo tiene sentido
-           C                       G
-Tu yugo es fácil y eres fácil de amar
-              Am7  C   D    Em
-Te escucho decir vuelve a mí
-          Am7  C  D   G     D
-Nunca me fui sigo aquí
-
-[Coro]
-   Em                C
-Jesús a tus brazos regreso
-   G                         D
-Descanso en que estás en control
- Em                    C
-Y aún cuando no lo comprendo
-    G             D
-Confío en tu corazón
-           Em - C - G - D
-// otra vez //
-
-[Puente]
- G                             D/F#
-Toma las piezas de mi corazón
-   Em                          D     C     D
-que puede ser una ofrenda de adoración  x4
-
-[Coro]
-   Em                C
-Jesús a tus brazos regreso
-   G                         D
-Descanso en que estás en control
- Em                    C
-Y aún cuando no lo comprendo
-    G             D
-Confío en tu corazón
-           Em - C - G - D
-// otra vez //`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Me rindo a ti",
-  artist: "Un Corazón, Kim Richards, LUISFER",
-  key: "B",
-  capo: "",
-  content: `[Verso 1]
-B
-Oh gloriosa cruz donde en mi lugar
-Con sangre y dolor el hijo murió en soledad
-Oh sublime amor, ¿cómo comprender?
-Que Dios entregó deseando tenerme con Él
-
-[Coro]
-      E                 B                 G#m           F#
-Me rindo a ti, vengo a tus pies, todo lo que soy, todo tuyo es
-        E                B             G#m           F#
-Cristo Jesús quiero responder a tu grande amor entrego mi ser
-
-E  B  G#m  F#
-
-[Verso 2]
-B                  B4
-Oh cuán dulce paz, que llenó mi ser
-   G#m          F#/A#     B      E
-Y por su perdón me puedo acercar otra vez, otra vez
-
-[Coro]
-      E                 B                 G#m           F#
-Me rindo a ti, vengo a tus pies, todo lo que soy, todo tuyo es
-        E                B             G#m           F#
-Cristo Jesús quiero responder a tu grande amor entrego mi ser
-      E                 B                 G#m           F#
-Me rindo a ti, vengo a tus pies, todo lo que soy, todo tuyo es
-        E                B             G#m               F#
-Cristo Jesús quiero responder a tu grande amor entrego mi ser
-
-[Puente]
-      E     B           G#m      F#
-Todo mi corazón te pertenece, señor
-     E     B           G#m      F#
-Todo mi corazón te pertenece, señor
-     E      B          G#m      F#
-Y todo mi corazón te pertenece, señor
-     E      B          G#m      F#   B
-Y todo mi corazón te pertenece, señor
-
-[Coro]
-      E                 B                 G#m           F#
-Me rindo a ti, vengo a tus pies, todo lo que soy, todo tuyo es
-        E                B             G#m           F#
-Cristo Jesús quiero responder a tu grande amor entrego mi ser`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Viento fresco",
-  artist: "Hillsong Worship",
-  key: "F",
-  capo: "",
-  content: `[Intro]
-F   C   G   Am
-
-[Verso 1]
- F        C
-Espíritu muévete
-G            Am7
-Con poder y fuego ven
- F         C             G
-Sopla hoy con tu aliento aquí
-
-[Verso 2]
-  F         C
-Arrepentido vengo a ti
-G              Am
-Tu avivamiento enciende en mí
- F          C            G
-Sopla Dios y haz tu llama arder
-
-[Coro]
-           F                   Am
-Un viento fresco, fragancia del cielo
-            C              G
-Ven Espíritu, ven Espíritu
-
-[Verso 3]
- F          C
-Refina Dios mi corazón
- G          Am
-Y purifica mi interior
- F             C        G
-Tu fuego en mí arde con pasión
-
-[Verso 4]
- F              C
-Tu Iglesia Dios la antorcha es
- G             Am
-Tú la harás resplandecer
- F            C              G
-Tu reino aquí es nuestra oración
-
-[Coro 2]
-           F                   Am
-Un viento fresco, fragancia del cielo
-            C              G
-Ven Espíritu, ven Espíritu
-        F                         Am
-Tu santa presencia del cielo desciende
-            C              G
-Ven Espíritu, ven Espíritu
-
-  F             Am
-Ven Espíritu, ven Espíritu
- C               G
-Ven Espíritu, ven Espíritu
-  F              Am
-Ven Espíritu, ven Espíritu
-  C               G
-Ven Espíritu, ven Espíritu
-
-[Puente]
-F                   Am
-Los que Él redimió profetizarán
-C                              G
-Con tu aliento Dios sopla, sopla, sopla
-F                   Am
-En la adoración, Tú te moverás
-C                              G
-Con tu aliento Dios sopla, sopla, sopla
-
-[Coro 2]
-           F                   Am
-Un viento fresco, fragancia del cielo
-            C              G
-Ven Espíritu, ven Espíritu
-        F                         Am
-Tu santa presencia del cielo desciende
-            C              G
-Ven Espíritu, ven Espíritu`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Bendito",
-  artist: "Hakuna",
-  key: "D",
-  capo: "",
-  content: `[Coro 1]
-      D
-Bendito sea Dios
-               G
-Su santo nombre
-      D
-Bendito Jesucristo
-             G
-Dios te calme
-
-       A             G                   D
-Bendita creación que enamoró a su creador
-        A             G
-Bendito deseado
-            D
-Y deseante.
-
-[Verso]
-       D
-Bendito sea Dios
-                            G
-Su ardiente corazón
-         A                             G
-Su preciosa sangre, su presencia apasionada
-    D
-en el altar.
-
-      D
-Bendito el espíritu libre
-      G
-Y amante
-       A                       G
-Bendita la madre de Dios, José, los ángeles,
-D
-los santos
-       A                           G
-Bendito Cristo, entre nosotros
-       D
-Su familia
-
-[Puente]
-D
-Uh, uh, uh, uh, uh-uh
-          G
-Uh-uh-uh-uh
-D
-Uh, uh, uh, uh, uh-uh
-           G
-Uh-uh-uh-uh
-A   G    D
-Uh, uh, uh-uh
-A    G
-Uh, uh
-D
-Que da la vida
-
-[Final]
-      D
-Bendito sea Dios
-                G
-Que da la vida`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Me rindo",
-  artist: "Alfareros",
-  key: "Ab",
-  capo: "Capo 1 (suena en Ab)",
-  content: `[Verso]
-            G           D        Em        C
-Vengo ante ti con mi dolor sin fuerza sin voz
-          G           D          Em    C
-Y te veo ahí y solo quiero entregarte todo lo que tengo en mí
-
-[Puente]
-G         D                    Em            C
-Quiero lavar tus pies con mi llanto con mi llanto
-G         D                    Em            C
-Quiero lavar tus pies con mi llanto con mi llanto
-
-[Coro]
-     G       D        Em       C
-Me rindo me rindo me rindo me rindo a ti Sr.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "En espíritu y verdad / Tú eres la luz",
-  artist: "",
-  key: "E",
-  capo: "",
-  content: `      E                              C#m
-Jesús, Bendito Dios fuerte, consejero prudente,
-                           A                       B
-príncipe de paz,
-                   E                             C#m
-Tú eres la luz que me ha iluminado,
-                           A                       B
-la luz que ha cegado a mi corazón,
-                    E                            C#m
-yo quiero entrar en tu presencia
-                    A                    B
-y así cara a cara poderte adorar
-                             E                       C#m
-en Espíritu y verdad,
-                A                     B
-quiero adorar quiero adorar quiero adorar.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Dios te bendiga",
-  artist: "Música Católica",
-  key: "C",
-  capo: "",
-  content: `C                             F              C
-Que el Señor te bendiga y te guarde
-        Em                  F              G
-y su rostro resplandezca sobre ti,
-        F          G            C-Em-Am
-y de ti tenga Él misericordia;
-              F             G           C
-que el Señor te bendiga. Amén.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Tumbas a Jardines",
-  artist: "Elevation Worship",
-  key: "B",
-  capo: "",
-  content: `[Intro]
-B  E/B  B
-
-[Verso 1]
-   E/B        B
-El mundo busqué
-     E/B      B
-Y no pudo llenarme
-        G#m               B/F#
-Ningún tesoro que pueda ganar
-         E
-Me saciará
-
-[Verso 2]
-             B
-Mas llegaste tú
-  E/B          B
-Me diste vida nueva
-        G#m           B/F#
-Y cada deseo se cumplirá
-             E
-Aquí en tu amor
-
-[Coro]
-          B
-Oh no hay nada, nada mejor
-       G#m
-No hay nada, nada mejor
-        E                      B
-No hay nada, nada mejor que mi Dios
-
-[Verso 3]
-        B
-Vengo a ti
-      E            B
-Sin miedo y sin reservas
-       G#m                B/F#
-Cada fracaso has visto Señor
-                E
-Y aún tu amigo soy
-
-[Verso 4]
-                       B
-Porque el Dios de los montes
-     C#m            B
-Es el Dios de los valles
-        G#m                  B/F#
-No hay lugar que me pueda alejar
-                 E
-De tu gracia y amor
-
-[Coro x2]
-
-[Puente 1]
-B                        E B
-Cambias lamento en danza
-                     E B
-De cenizas traes vida
-Cambias culpa por gloria
-      G#m     E       B
-Sé que solo tú lo harás
-
-[Puente 2]
-                      E B
-De las ruinas y tumbas
-                     E B
-Nacen nuevos jardines
-Resucitas los huesos
-      G#m    E       B
-Sé que solo tú lo harás
-      G#m    E       B
-Sé que solo tú lo harás
-
-[Final]
-      G#m    E        B
-Sé que solo tú lo harás`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Encontré",
-  artist: "Generación 12",
-  key: "B",
-  capo: "",
-  content: `[Intro]
-B - Emaj7 - G#m - F# - Emaj7
-
-[Verso 1]
-      B                         Emaj7
-Encontré agua que da vida, encontré
-                       G#m
-Agua que da vida, encontré
-           F#               Emaj7
-Es un manantial que sacia mi alma
-
-      B                    Emaj7
-Encontré pan de vida, encontré
-                 G#m
-Pan de vida encontré
-     F#       Emaj7
-Y jamás seré igual
-
-[Coro]
-      B            G#m
-Jesucristo, hoy me rindo
-                F#
-Solo tengo este corazón
-             Emaj7
-Para darte mi adoración
-
-      B             G#m
-Jesucristo, yo me inclino
-                  F#
-Cuán hermoso eres Tú, Señor
-                 Emaj7
-Cuán hermoso eres Tú, Señor
-
-[Verso 2]
-      B
-Encontré a Jesús,
-                    Emaj7
-mi buen pastor encontré
-                              G#m
-A Jesús, mi buen pastor, encontré
-       F#              Emaj7
-Él me cuida y me da descanso
-
-       B                             Emaj7
-Encontré, paz que no se puede comprender
-                           G#m
-Paz que no se puede comprender
-   F#              Emaj7
-Y ahora mi alma te canta
-
-[Coro]
-
-[Puente]
-           E            F#
-Cuán grande es Tu amor
-         G#m
-Nada me falta
-          B
-Nada me falta
-
-[Coro]
-
-[Verso 3]
-      B                           Emaj7
-Encontré aquel que Su sangre derramó
-                       G#m
-Y con Sus heridas me sanó
-      F#             Emaj7
-Encontré a Cristo, mi Salvador
-
-       B                                   Emaj7
-Puedo ver las marcas en Sus manos y en Sus pies
-                               G#m
-El amor del Cielo demostrado en Él
-      F#             Emaj7
-Oh Jesús, cordero de Dios.
-
-[Coro Final]`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Todo",
-  artist: "Hakuna",
-  key: "A",
-  capo: "",
-  content: `[Intro]
-A
-
-[Verso]
-A                                         Bm
-Padre, pon tu Espíritu sobre mí
-           D
-Aquí estoy, aquí me tienes
-E
-Gracias por la vida
-             A   E         F#m
-Que la viva siendo todo yo
-            Bm              E
-Que la viva siendo todo yo
-            A
-Todo libre, todo entregado
-
-Todo Tú, todo dado
-          C#m
-Todo alegre, todo amante
-          C#m7
-Todo amado
-Todo arrodillado
-
-Todo hijo, todo hermano
-                              D
-Todo padre, todo disfruto
-             E          D
-Todo mariano, todos por todos
-C#m             E
-Que viva todo
-                  A
-Con toda el alma`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Abres camino",
-  artist: "Rojo, Joel Contreras",
-  key: "Eb",
-  capo: "",
-  content: `[Intro]
-Eb - Bb - F - Gm
-
-[Verso]
-        Eb              Bb
-Aquí estás, te vemos mover
-       F           Gm
-Te adoraré, te adoraré
-      Eb             Bb
-Aquí estás obrando en mí
-       F           Gm
-Te adoraré, te adoraré
-
-[Coro]
-Eb
-Milagroso, abres camino
-Bb
-Cumples promesas
-               F
-Luz en tinieblas
-                 Gm
-Mi Dios, así eres Tú
-
-      Eb                 Bb
-Aquí estás sanando mi corazón
-       F           Gm
-Te adoraré, te adoraré
-      Eb                 Bb
-Aquí estás tocando mi corazón
-       F           Gm
-Te adoraré, te adoraré.
-
-[Puente]
- Eb
-Aunque no pueda ver, estás obrando
-Bb
-Aunque no pueda ver, estás obrando
-F
-Siempre estás, siempre estás obrando
-Gm              F
-Siempre estás, siempre estás obrando`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Hay poder",
-  artist: "Generación 12",
-  key: "B",
-  capo: "",
-  content: `[Intro]
-G#m B E G#m
-
-[Verso]
-G#m            E
-Soy redimido y mis pecados
-B                   F#
-Tú llevaste en esa cruz
-G#m           E
-Hoy nos postramos, ante el Cordero
-B                        F#
-Que nos santificó
-
-[Coro]
-E           C#m
-Hay poder, hay poder
-                B
-En tu sangre, Jesús,
-                   F#                    E
-Las cadenas rotas son y la enfermedad llevó
-                C#m
-Hay poder, hay poder
-                B
-En tu sangre, Jesús,
-             F#                  E
-Todo ciego verá y todos confesarán
-
-[Puente]
-C#m           G#m         B          F#
-Mi Cristo, Cordero, tu sangre me salvó.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Babel",
-  artist: "Un Corazón",
-  key: "D",
-  capo: "",
-  content: `[Verso 1]
-          G             Bm           A
-¿En qué momento es que perdimos el camino?
-           G             Bm           A
-¿En qué momento es que dejamos de escuchar?
-           G            Bm            A
-¿En qué momento el corazón se volvió frío?
-
-          Em    D      A
-Oh Padre nuestro, perdón
-          Em    D      A
-Oh Padre nuestro, perdón
-
-[Coro]
-         G        A   Bm
-Pedimos gracia y misericordia
-        A     D           A
-Que tu reino venga, intervén
- F#m       G         A   Bm
-En ti hay gracia y misericordia
-       A    D           A          G  Bm  A
-Hoy los redimidos dicen ven, Cristo ven
-
-[Verso 2]
-          G             Bm           A
-¿En qué momento es que olvidamos al herido?
-           G             Bm           A
-¿En qué momento es que empezamos a juzgar?
-           G             Bm           A
-¿En qué momento construimos nuestro reino?
-
-          Em    D      A
-Oh Padre nuestro, perdón
-          Em    D      A
-Oh Padre nuestro, perdón
-
-[Coro]
-         G        A   Bm
-Pedimos gracia y misericordia
-        A     D           A
-Que tu reino venga, intervén
- F#m       G         A   Bm
-En ti hay gracia y misericordia
-       A    D           A          G  Bm  A
-Hoy los redimidos dicen ven, Cristo ven
-
-[Puente]
-G                     Bm
-Un mover, un despertar cuando llenas
-A               G              D  A
-El lugar hay libertad (amén, amén)
-G                     Bm
-Un mover, un despertar cuando tomas
-A                 G  D  A
-Tu lugar hay sanidad
-
-[Coro]
-         G        A   Bm
-Pedimos gracia y misericordia
-        A     D           A
-Que tu reino venga, intervén
- F#m       G         A   Bm
-En ti hay gracia y misericordia
-       A    D           A          G  Bm  A
-Hoy los redimidos dicen ven, Cristo ven`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "1000 Pedazos",
-  artist: "Un Corazón",
-  key: "D",
-  capo: "",
-  content: `[Intro]
-Bm  G  D  A
-
-[Verso 1]
-         Bm               G
-A veces das y a veces quitas
-         D           A
-Tu voluntad puede doler
-     Bm            G         D  A
-Pero sé que todo obra para bien
-         Bm              G
-El mundo quita y no perdona
-          D            A
-Y soy culpable yo también
-             Bm            G           D   A
-¿Cómo es que todo sigue obrando para bien?
-
-[Pre-Coro]
-   G         A       Bm           A/C#    D
-Y sí, no es fácil seguir, pero un día te oí
-A4       D
-Me llamaste
-G       A       Bm       A          D
-Y lo difícil sería no estar junto a ti
-
-[Coro]
-D          A            Bm                G
-Tu bondad nunca me abandona, nunca decepciona
-D          A               Bm                     G
-Tu verdad siempre me ha cuidado, aún cuando he dudado
-        G            A           D        A    Bm
-Y si estoy en mil pedazos es porque no es el final
-      G            A          D     A     Bm
-Alma mía en mil pedazos nunca dejes de adorar
-      G          A           Bm
-Alma mía, nunca dejes de adorar
-
-[Verso 2]
-       Bm           G               D           A
-Un día más en el desierto donde me hablas en silencio
-       Bm           G           D    A
-Y me recuerdas todo obra para bien
-
-[Pre-Coro]
-   G         A       Bm           A/C#    D
-Y sí, no es fácil seguir, pero un día te oí
-A4       D
-Me llamaste
-G       A       Bm       A          D
-Y lo difícil sería no estar junto a ti
-
-[Coro]
-D          A            Bm                G
-Tu bondad nunca me abandona, nunca decepciona
-D          A               Bm                     G
-Tu verdad siempre me ha cuidado, aún cuando he dudado
-        G            A           D        A    Bm
-Y si estoy en mil pedazos es porque no es el final
-      G            A          D     A     Bm
-Alma mía en mil pedazos nunca dejes de adorar
-      G          A           Bm
-Alma mía, nunca dejes de adorar`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Salmo 23",
-  artist: "Un Corazón",
-  key: "C",
-  capo: "",
-  content: `[Verso 1]
-      C                          F
-Tengo todo, eres todo lo que necesito
-        C                                F
-Tú me llevas al lugar donde encontré descanso
-G                             Am        F
-Renuevas mis fuerzas, tú guías mis pasos
-G                             Am        F - G
-Renuevas mis fuerzas, tú guías mis pasos
-
-[Coro]
-     Am            F
-Tu amor inagotable es
-                C             Em
-Tu bondad me persigue, te persigo
-      Am                   F
-En tu mesa me diste un lugar
-               C          Em
-Me recibes en casa para siempre
-
-[Verso 2]
-        C                            F
-En tus brazos cada miedo y temor se apagan
-         C                               F
-Tú me enseñas a confiar cuando mi fe desmaya
-G                             Am        F
-Renuevas mis fuerzas, tú guías mis pasos
-G                             Am        F
-Renuevas mis fuerzas, tú guías mis pasos
-
-[Coro]
-     Am            F
-Tu amor inagotable es
-                C             Em
-Tu bondad me persigue, te persigo
-      Am                  F
-En tu mesa me diste un lugar
-               C          Em
-Me recibes en casa para siempre
-
-[Puente]
-       F           G            Am               Em
-Aunque pase por el valle de las sombra y muerte
-       F          G         Am           Em
-Ya no temo, yo confío, Tú estás conmigo
-      F           G           Am           Em
-Y si caigo o me pierdo, vienes a buscarme
-        F             G            Am            Em
-No me olvidas y me encuentras y nunca te rindes
-
-[Coro]
-     Am            F
-Tu amor inagotable es
-                C             Em
-Tu bondad me persigue, te persigo
-      Am                  F
-En tu mesa me diste un lugar
-               C          Em
-Me recibes en casa para siempre`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Jesucristo Basta",
-  artist: "Un Corazón",
-  key: "Ab",
-  capo: "Capo 1 (forma en G, suena en Ab)",
-  content: `[Intro]
-Em7  C9  G
-
-[Primera Parte]
-Em7           C9  G
-Nuestros corazones
-Em7      C9     G  G9
-Insaciables son
-Em7         C9   G
-Hasta que conocen
-      D2   Em7  C9  G  D2
-A su Salvador
-
-[Pre-Coro]
- C9                    Em7  D4  D
-Tal y como somos nos amó
- C9                      Em7  D5
-Hoy nos acercamos sin temor
-
-[Coro]
-G        D              Em7
-Él es el agua que al beber
-       C9            G
-Nunca más tendremos sed
-      D        Em7
-Jesucristo basta
-      C9       G
-Jesucristo basta
-
-       D         Em7
-Mi castigo recibió
-        C9             G
-Y su herencia me entregó
-      D        Em7
-Jesucristo basta
-      C9       Em7  D2  C9
-Jesucristo basta
-
-[Segunda Parte]
-Em7        C9    G
-Fuimos alcanzados
-Em7          C9   G
-Por su gran amor
-Em7         C9    G
-Con brazos abiertos
-       D    Em7  C9  G  D5
-Nos recibe hoy
-
-[Pre-Coro]
- C9                    Em7  D4  D
-Tal y como somos nos amó
- C9                      Em7  D5
-Hoy nos acercamos sin temor
-
-[Coro]
-G        D              Em7
-Él es el agua que al beber
-       C9            G
-Nunca más tendremos sed
-      D        Em7
-Jesucristo basta
-      C9       G
-Jesucristo basta
-
-       D         Em7
-Mi castigo recibió
-        C9             G
-Y su herencia me entregó
-      D        Em7
-Jesucristo basta
-      C9       Em7  D2  C9
-Jesucristo basta
-
-[Tercera Parte]
-Em7           C9    G   G9
-Ahora hay un futuro
-Em7        C9     G   G9
-Y esperanza fiel
-Em7         C9      G
-En su amor confiamos
-        D       G
-Hay descanso en Él`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Vasijas Rotas",
-  artist: "Hillsong Worship",
-  key: "G",
-  capo: "",
-  content: `[Intro]
-Em  G
-
-[Verso 1]
-Em         C             Em
-Mi alma estaba rota y herida
-          C           Em
-Pero tu gracia la restauró
-         C             G
-Manos vacías que tú llenaste
-              D
-Soy libre en ti
-             Em    D
-Soy libre en ti
-
-[Pre-Coro]
-    G           D
-Sublime gracia del Señor
-         Em          C
-Que a un pecador salvó
-      G            D
-Fui ciego mas hoy veo yo
-   Em               C
-Perdido y Él me halló
-
-[Coro]
-             G              D
-Ahora puedo ver
-                 Em        C
-Oh puedo ver sus ojos de amor
-             G              D
-Quebrantado fue
-             Em       C
-Para darnos su salvación
-
-[Verso 2]
-          Em                G
-Tú no me juzgas por mis fracasos
-         Em             G
-Tú me aceptas tal como soy
-        Em           G
-Toma mi vida como vasija
-       D                Em     D
-Para mostrar tu gloria en mí
-
-[Pre-Coro]
-    C           D
-Sublime gracia del Señor
-         Em          C
-Que a un pecador salvó
-      G            D
-Fui ciego mas hoy veo yo
-   Em               C
-Perdido y Él me halló
-
-[Coro]
-             G              D
-Ahora puedo ver
-                 Em        C
-Oh puedo ver sus ojos de amor
-             G              D
-Quebrantado fue
-             Em       C
-Para darnos su salvación
-
-[Pre-Coro]
-    G           D
-Sublime gracia del Señor
-         Em          C
-Que a un pecador salvó
-      G            D
-Fui ciego mas hoy veo yo
-   Em               C
-Perdido y Él me halló
-
-[Coro Final]
-             G              D
-Ahora puedo ver
-                 Em        C
-Oh puedo ver sus ojos de amor
-             G              D
-Quebrantado fue
-             Em       C
-Para darnos su salvación`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "La bendición",
-  artist: "Elevation Worship",
-  key: "A",
-  capo: "",
-  content: `[Verso]
-A                 D
-Dios te guarde y bendiga
-A                 E                    F#m
-Que extienda su amor y te muestre favor
-    D           A            E    A     D
-Dios te mire con agrado y te dé paz
-A              D
-Dios te guarde y bendiga
-    A                  E                F#m
-Que extienda su amor y te muestre favor
-     D           A            E    A
-Dios te mire con agrado y te dé paz
-
-[Coro]
-F#m  D     A      E
-Amén, amén, amén
-
-[Puente 1]
-          F#m                           D
-Que te cubra con su gracia hasta mil generaciones
-        A                        E
-Tu familia y tus hijos y los hijos de tus hijos
-
-[Puente 2]
-         F#m                             D
-Su presencia te acompañe donde quiera que tú vayas
-           A                           E
-Que te llene, te rodee va contigo, va contigo
-        F#m                            D
-De mañana y de noche, en tu entrada y salida
-          A                       E
-En tu llanto y alegría él te ama, él te ama
-
- F#m     D           A           E
-Él te ama, él te ama, él te ama, él te ama
-
-[Coro]
-F#m  D     A      E
-Amén, amén, amén`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Gloria",
-  artist: "Martín Valverde",
-  key: "Dm",
-  capo: "",
-  content: `[Estribillo]
-Dm     Dm/C  Bb A Dm
-Gloria,      Gloria,
-Dm     Dm/C  Bb A Dm D7
-Gloria,      Gloria,
-
-     Gm      C
-a Jesús el Señor,
-    F          Dm
-al Cordero de Dios.
-    Gm           A9   Dm    D7
-Al nombre sobre todo nombre.
-
-     Gm      C
-a Jesús el Señor,
-    F           Dm
-al Cordero de Dios.
-    Gm           A9   Dm
-Al nombre sobre todo nombre.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Inagotable",
-  artist: "Living",
-  key: "E",
-  capo: "",
-  content: `[Intro]
-E  B  C#m  A
-
-[Verso 1]
-E
-Al pensar
-                C#m
-Lo que has hecho en mí
-            B
-Cuán profundo
-         A
-Tú me amaste
-E
-Sin dudar
-                C#m
-Me escogiste a mí
-            B
-Por mi nombre
-         A
-Me llamaste
-
-B              A
-  Dame de beber
-
-[Coro]
-      E
-De tu amor
-                        C#m
-La fuente de todo poder
-                           B
-El agua que sacia mi sed
-                  A
-Tu inagotable amor
-      E
-Tu amor
-                    C#m
-Nunca podré imaginar
-                           B
-El ancho y la profundidad
-                  A
-De tu inagotable amor
-
-[Verso 2]
-E
-Tu lugar
-                C#m
-Es ahora en mí
-            B
-Al creerte
-         A
-Me haces fuerte
-E
-Como Él es
-                C#m
-Soy yo ahora aquí
-            B
-Mis temores
-         A
-Desvanecen
-
-[Puente]
-C#m  A  E  B/D#
-
-     C#m
-A aquel
-              A
-Que tiene el poder
-                    E
-La gloria sea a Él
-                    B/D#
-La gloria sea a Él`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "La sombra de tus alas",
-  artist: "Un Corazón ft. Living",
-  key: "C",
-  capo: "",
-  content: `[Intro]
-C  Em  F  C
-
-[Verso 1]
-C                                  Em
-Como la aurora tu ser, se ha convertido en mi amanecer
-               F         C
-Si tú estás en mí... hay vida
-C                                   Em
-Aunque no te pueda ver, tú estás conmigo no temeré
-          F        C  G
-Tu dulce voz... me guía
-
-[Coro]
-     F     C                      G
-Confiaré... mi esperanza en ti pondré
-     F        C               G
-Te veré... venir como el amanecer
-        F       G    Am
-En mí harás, tu voluntad
-      F                  G                C
-En la sombra de tus alas siempre quiero estar
-
-[Verso 2]
-C                                    Em
-La noche acabará, lámpara es a mis pies tu verdad
-         F           C
-Me levantarás... de nuevo
-C                                 Em
-Puestos los ojos en ti, es esa la forma en que quiero vivir
-          F                   G
-Dejando atrás... la duda y el miedo
-
-[Coro]
-     F     C                      G
-Confiaré... mi esperanza en ti pondré
-     F        C               G
-Te veré... venir como el amanecer
-        F       G    Am
-En mí harás, tu voluntad
-      F                  G                C
-En la sombra de tus alas siempre quiero estar
-
-[Puente]
-   G    Am     F           C           G
-Descansaré, confío en Jesús, no hay otro nombre
-           Am  F              C        G
-Él es el autor de nuestra fe, Hijo del Hombre
-       Am     F                     G        C
-No temeré, en la sombra de sus alas permaneceré
-
-[Final]
-      F         G    Am    G
-Te adoramos... eres dig - no
-        F           G    Am    G
-Está escrito... has venci - do
-      F         G    Am    G
-Te adoramos... eres dig - no
-        F           G    Am    G
-Está escrito... has venci - do`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Tú eres todo",
-  artist: "Steven & Lluvia",
-  key: "Bb",
-  capo: "Cejilla 1",
-  content: `[Verso 1]
-Bb                         Eb            Bb
-Creador sin igual, se hizo mortal,
-                                F
-en la cruz él nos dio libertad,
-      Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
-      Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!».
-
-[Verso 2]
-Bb                             Eb            Bb
-Un día él me encontró y me dio salvación,
-                           F
-y limpió mi rebelde interior,
-      Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
-      Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!».
-
-[Coro]
-Bb             Gm
-Tú eres todo, Dios con nosotros,
-Cm       Gm       Eb        F
-Rey sin igual, no hay más palabras.
-
-[Verso 3]
-Bb                             Eb            Bb
-Si me encuentra la paz o una gran tempestad,
-                    F
-esta voz nunca voy a callar,
-      Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
-      Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!».
-
-[Verso 4]
-Bb                             Eb            Bb
-Y yo sé que vas a volver a este mundo envolver
-                          F
-con el fuego y la luz de tu ser,
-      Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
-      Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!»
-      Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!»
-
-[Coro x2]
-Bb             Gm
-Tú eres todo, Dios con nosotros,
-Cm       Gm       Eb        F
-Rey sin igual, no hay más palabras.
-
-[Verso 5]
-Bb                                   Eb            Bb
-Cuando esté frente al sol junto al gran resplandor
-                    F
-del eterno y glorioso Señor,
-      Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
-      Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!».
-
-[Puente]
-Bb - Gm - Cm Gm - Eb F
-
-[Coro x2]
-Bb             Gm
-Tú eres todo, Dios con nosotros,
-Cm       Gm       Eb        F
-Rey sin igual, no hay más palabras.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Dame",
-  artist: "Adrián Roberto",
-  key: "G",
-  capo: "",
-  content: `[Verso 1]
-C              G
-Vé mi interior tú lo haces mejor que yo
-         C                   Em
-Tal vez ya no esté lo que hiciste en mí
-            C              D
-Pero aun así te puedo encontrar
-
-[Verso 2]
-   C             G
-Camina junto a mí
-          C                      G
-Bajo el sol, el cielo y junto al mar
-         C                   Em
-No me quiero apartar de tu lado otra vez
-                C           D
-Aunque baje el sol te quiero ver
-
-[Coro]
-          G
-Dame tus ojos en tiempo de oscuridad
- G/B        C
-Dame tus manos tan llenas de tu amor
- G/F#          G         G/B      C
-Quiero ese corazón que late por mí,
-         Em   D/F#   G
-late por mí
-
-[Verso 3]
-   C          G
-¿Cuándo empezó?
-         C                       G
-¿Cuándo te convertiste en mi hogar?
-         C                    Em
-Ya no quiero soñar quiero estar junto a ti
-              C         D
-Quiero respirar tu perfección
-
-[Coro]
-          G
-Dame tus ojos en tiempo de oscuridad
- G/B        C
-Dame tus manos tan llenas de tu amor
- G/F#          G        G/B     C
-Quiero ese corazón que late por mí
-           G
-Dame tus pies para volver a caminar
- G/B        C
-Dame pasión para buscarte más y más
- G/F#          G        G/B      C
-Quiero ese corazón que late por mí
-
-[Puente]
-           Am              Em         G
-Quiero estar en tu interior, inventar
-        D/F#         C
-y comenzar a respirar
-
-[Coro]
-          G
-Dame tus ojos en tiempo de oscuridad
- G/B        C
-Dame tus manos tan llenas de tu amor
- G/F#          G        G/B     C
-Quiero ese corazón que late por mí
-           G
-Dame tus pies para volver a caminar
- G/B        C
-Dame pasión para buscarte más y más
- G/F#          G        G/B      C
-Quiero ese corazón que late por mí
-   G/B     C      G/F#   G
-Que late por mí`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Tú el único Rey",
-  artist: "Una Voz",
-  key: "G",
-  capo: "Cejilla 3",
-  content: `[Estribillo]
-G             Em
-Tú, el Único Rey
-                C
-que tiene que reinar,
-         D                 G
-el Único Señor al que voy a alabar.
-              Em
-Hoy levanto el corazón
-              C
-al que lo conquistó,
-         Dsus4      D        G
-simplemente porque Tú eres Dios.
-
-[Verso]
-      G
-Quiero ponerte
-              C
-por encima de todo.
-    Em
-En cada momento
-              D
-sentarte en el trono.
-
-Que tu alabanza,
-esté siempre en mi boca,
-y reconocer,
-que Tú eres Dios.
-
-[Pre-coro]
-         C              D
-Que alabarte a Ti, Señor,
-      Em             G
-sea siempre lo primero.
-C                    D
-Fijo mi mirada en el Cielo.
-
-[Estribillo]
-G             Em
-Tú, el Único Rey
-                C
-que tiene que reinar,
-         D                 G
-el Único Señor al que voy a alabar.
-              Em
-Hoy levanto el corazón
-              C
-al que lo conquistó,
-         Dsus4      D        G
-simplemente porque Tú eres Dios.
-
-[Puente]
-G  G
-C  Bm7  Am7  Dsus4  D
-
-         C             Bm7
-Y a Ti, toda la alabanza,
-              Am7
-Todo el poder y el honor,
-         Dsus4        D
-Toda la gloria al Señor (x4)
-
-[Estribillo]
-G             Em
-Tú, el Único Rey
-                C
-que tiene que reinar,
-         D                 Bm
-el Único Señor al que voy a alabar.
-              Em
-Hoy levanto el corazón
-              C
-al que lo conquistó,
-         Dsus4      D        Cmaj7
-simplemente porque Tú eres Dios.
-
-Cmaj7  Em
-         Dsus4         D
-Simplemente porque Tú eres Dios.
-Cmaj7  Em
-         Dsus4         D
-Simplemente porque Tú eres Dios.
-
-G`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Yeshua",
-  artist: "Misael Valera",
-  key: "D",
-  capo: "",
-  content: `[Intro]
-D  A  Bm  G
-
-[Coro]
-D                  A
-Yeshua, Yeshua, Yeshua
-Bm                 G
-Nombre sobre todo nombre
-D                  A
-Yeshua, Yeshua, Yeshua
-Bm                 G
-Rey de reyes y Señor
-
-[Verso 1]
-D                A
-En tu nombre hay salvación
-Bm               G
-Toda rodilla se doblará
-D                A
-En tu nombre hay sanación
-Bm               G
-Toda lengua confesará
-
-[Verso 2]
-D                    A
-Jesús, tú eres el camino
-Bm                   G
-La verdad y la vida eres tú
-D                    A
-En ti tengo yo el destino
-Bm                   G
-Mi vida entrego solo a ti
-
-[Puente]
-G                  A
-Tú eres digno de toda gloria
-G                  A
-Tú eres digno de todo honor
-G                  A
-Tú eres digno, oh Señor Jesús
-Bm          A          G
-Yeshua, Yeshua, Yeshua`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Viva Cristo Rey",
-  artist: "Jesed",
-  key: "C",
-  capo: "",
-  content: `[Verso 1]
-C                F    C
-¡Oh, Señor, Dios eterno!
-           F       C
-¡Oh, Dios santísimo!
-       Am             Em
-Eres nuestro Rey y libertador
-            F           G
-El santo de Israel
-C          Fm    C
-Ante ti nos postramos
-            F      C
-Y tu nombre adoramos
-         Am          Em
-Poderoso Juez, invencible
-        F        G
-Altísimo Señor
-
-[Estribillo]
-Am         F  G     Am         F  G
-Solo tú eres santo, solo tú El Shaddai
-Am             F       Dm   G
-Solo tú eres digno, Adonai
-
-[Verso 2]
-C                F    C
-¡Oh, Señor, Dios eterno!
-           F       C
-¡Oh, Dios santísimo!
-       Am             Em
-Eres nuestro Rey y libertador
-            F           G
-El santo de Israel
-C          Fm    C
-Ante ti nos postramos
-            F      C
-Y tu nombre adoramos
-         Am          Em
-Poderoso Juez, invencible
-        F        G
-Altísimo Señor
-
-[Estribillo 2]
-Am                  F   G
-Desde el trono de gracia
-Am               F    G
-Riges con santidad
-Am             F
-Coronado de gloria
-       Dm          G
-Y de majestad
-Am                  F   G
-Desde el trono de gracia
-Am               F    G
-Riges con santidad
-Am             F
-Coronado de gloria
-       Dm          G
-Y de majestad
-
-[Final]
-F   Dm7   C
-¡Viva el Rey!
-F   Dm7   C
-¡Viva el Rey!`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Digno de Alabar",
-  artist: "Athenas",
-  key: "A",
-  capo: "Cejilla 2 (tonalidad B)",
-  content: `[Verso 1]
-A
-Levanto mis manos
-        F#m
-Cierro mis ojos
-                 D                  E
-Para proclamar tu nombre, Dios de poder
-A
-Levanto mis manos
-        F#m
-Cierro mis ojos
-                 D                  E
-Para proclamar tu nombre, Dios de amor
-
-[Coro]
-       D        E
-Digno de alabar, Señor
-               F#m   E       A
-Gloria y majestad sean a ti
-                 D
-Rey de la creación
-         E    F#m  E  A
-Por siempre, amén
-
-[Verso 2]
-A
-Abro mis labios
-        F#m
-Cierro mis ojos
-                 D                 E
-Para proclamar tu nombre, Dios de poder
-A
-Abro mis labios
-        F#m
-Cierro mis ojos
-              D                  E
-Para cantar tu nombre, Dios de amor
-
-[Coro]
-       D        E
-Digno de alabar, Señor
-               F#m   E       A
-Gloria y majestad sean a ti
-                 D
-Rey de la creación
-         E    F#m  E  A
-Por siempre, amén
-
-[Final]
-                 D
-Rey de la creación
-         E    F#m  E  A
-Por siempre, amén`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "A ti te alabo",
-  artist: "Hakuna",
-  key: "C",
-  capo: "Cejilla 3",
-  content: `[Estribillo]
-C
-A ti te alabo, Señor, en tu templo.
-G
-A ti te alabo con todo el firmamento.
-Am
-A ti te alabo con todo lo que Tú has hecho.
-F
-A ti te alabo Padre, Hijo, Amor eterno.
-
-A ti te alabo con trompas y flautas,
-A ti te alabo con tambores y danzas,
-A ti te alaban criaturas y animales,
-A ti te alaban las montañas y los mares.
-
-Am  G/B  C  C/E  F
-A ti te alaban
-
-[Verso]
-Am          C
-A ese ser que creó este
-F
-mundo por amor,
-¡no lo encontraba!
-Am             C
-No creía que fuera
-F
-posible este don: un Dios.
-
-F             C      Am
-Todo lo que veo a mi alrededor,
-F
-grita que aquí estás y esconde mi temor.
-
-F                    C
-Todo ser que aliente alabe al
-G
-Señor y grite bien fuerte:
-
-[Estribillo 2]
-C
-A ti te alabo, aunque te escondas, aunque yo no pueda verte.
-F
-A ti te alabo, que me salvas de la muerte.
-C/G
-A ti te alabo en el silencio de un amor que ya no siente.
-F/A
-A ti te alabo: eres mi Dios, eres mi Vida, eres mi Fuerte.
-
-C
-A ti te alabo en lo sencillo, cotidiano, indiferente.
-F
-A ti te alabo con el Vivo, que te busca ansiadamente.
-C/G
-A ti te alabo con el muerto, que te espera nuevamente.
-F/A          G/B
-A ti te alabo: ¡eres mi Dios, eres mi Vida!
-
-F  Am  G
-A ti te alabo (x3)
-
-F  G  Am  C  F
-A ti te alabo`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Nada",
-  artist: "Hakuna",
-  key: "C",
-  capo: "",
-  content: `[Intro]
-C  C
-
-[Verso 1]
-C
-Deja de herirte,
-         Am
-deja de poner en mi boca
- F             G
-palabras que nunca dije.
-          C
-Deja de pensar que estoy enfadado,
-         Am
-deja de decir
-              F
-que soy yo el que se está
-         G
-alejando de ti.
-
-[Puente]
-Am              G          C
-Y es que aún no lo ves me entrego por ti una y otra vez,
-   F            G
-tú siempre serás mi favorita,
-Am  G  C
-F  G
-nunca te dejaré, nunca te dejaré.
-
-[Coro]
-C
-Y es que no hay nada,
-Am
-nada, nada, nada
-F
-que puedas hacer
-G
-para que te deje de querer.
-C
-Y es que no hay nada,
-Am
-hagas lo que hagas,
-    F              G
-por favor, deja de decir
-que no eres amada por mí.
-
-[Verso 2]
-C                       Am
-No hay nada en tu alma
-que haga que en ti deje de pensar,
-      F
-estos muros que te destrozan
-   G
-son entre tú y tu libertad.
-Am
-Hazme caso hija mía
-G        C
-yo solo quiero verte feliz,
-F              G
-tú siempre tendrás mi perdón
-         Am          G
-te falta perdonarte a ti.
-
-[Puente 2]
-Am
-Es que, aunque peques y me cambies
-G
-por las cosas terrenales
-F
-aun que te alejes y me olvides
-G
-y me borres de tus planes.
-Am
-Aunque te rindas y te caigas
-G
-y no sepas levantarte,
-F              G
-si estás perdido pide ayuda.
-
-C
-Es que, aunque peques y me cambies
-Bb
-por las cosas terrenales
-F
-aun que te alejes y me olvides
-G
-y me borres de tus planes
-C
-aun que te rindas y te caigas
-Bb
-y no sepas levantarte
-F              G
-si estás perdido pide ayuda.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Arde",
-  artist: "Hakuna",
-  key: "G",
-  capo: "Cejilla 3",
-  content: `[Verso 1]
-G                          C
-Arde, con fuerza en este frío,
-                       Em
-Con todo el alma en vilo
-                    D
-Buscando una razón.
-G                                C
-Tiemblan, los Muros de esta celda,
-                       Em
-Que no pueden ni intentan
-                    D
-Contener su corazón.
-
-[Verso 2]
-Brazos cerrándose en abrazos,
-de un padre que dio tanto,
-de un hijo que murió.
-Lloran reyes y tronos lloran
-ante un hombre en la sombra,
-rezándole a su Dios.
-
-[Verso 3]
-La mira, y al verla el mundo gira,
-y en un solo segundo
-al cielo estremeció.
-Besa, donde ella pisa él besa,
-secándose las lágrimas
-al pedirle perdón.
-
-[Verso 4]
-Alza, un paso al firme al alba,
-ejércitos se apartan
-ante su convicción.
-Siente el peso que le viene,
-pero nada detiene
-su sencilla decisión.
-
-[Verso 5]
-Duerme, tranquilo el niño duerme,
-sufre porque no puede
-darle algo mejor.
-Calla, y en el silencio grita,
-se le traspasa el alma,
-sufre su condición.
-
-[Estribillo]
-G             C         Em
-Un "Te quiero" mudo en un silencio
-    D
-acogedor.
-         G           C            Em
-Un humilde carpintero duerme en
-Em            D
-brazos a su Dios.
-G             C         Em
-Un "Te quiero" mudo en un silencio
-    D
-acogedor.
-         G           C            Em
-Un humilde carpintero mira a los ojos
-   D
-a Dios.
-
-[Final]
-      G                 C
-Sonríe, tranquilo al fin sonríe.
-                     Em
-Y en un último aliento
-                 D D7
-Hizo llorar a Dios.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Madre de Hakuna",
-  artist: "Hakuna",
-  key: "E",
-  capo: "Cejilla 4",
-  content: `[Verso]
-E                          F#m
-Llévame contigo a todos lados,
-          B7                          E
-que pueda dormir tranquilo bajo tu
-precioso manto.
-E                             F#m
-Llévame contigo, no me sueltes de la
-mano,
-          B7                    E
-Y que cuando sienta frío, note tu
-cálido abrazo.
-
-                              F#m
-Llévame contigo, a donde quieras,
-              B7
-Y es que no hay mayor consuelo que
-       E
-una madre que te quiera y que algún
-       F#m B7
-día pudiera,
-                      E
-al Cielo ir por tu escalera.
-                      F#m
-Y entender que contigo Madre
-   B7              E
-querida, valió la pena.
-
-[Coro]
-A                  B               E
-Que no me canse nunca de mirarte
-A                  B          E
-Y repetir con humilde devoción:
-A                  B               E
-Te quiero con locura preciosa
-Madre
-A               B             E E7
-Tú el mejor regalo de mi Dios
-
-Que no me canse nunca de mirarte
-Y repetir con humilde devoción:
-Te quiero con locura preciosa
-Madre
-Tú Madre de Hakuna y mi corazón.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Me sobrepasa",
-  artist: "Hakuna",
-  key: "G",
-  capo: "Cejilla 7",
-  content: `[Verso 1]
-G
-Tú me sondeas y me conoces,
-Em
-cuando me siento o me levanto,
-   C
-de lejos penetras mis pensamientos;
-  D7
-distingues mi camino y mi descanso.
-
-Todas mis sendas te son familiares,
-conoces mis palabras.
-Me estrechas, me cubres con tu palma.
-Tanto saber me sobrepasa.
-
-[Puente]
-   C               D
-¿Adónde iré lejos de tu aliento,
-G          G/F#           Em
-a dónde escaparé de tu mirada?
-   Am                 D7
-Allí estás tú, allí te encuentro.
-
-[Verso 2]
-    G
-Si vuelo hasta el margen de la aurora,
-   Em
-si emigro hasta el confín del mar,
- C
-allí me alcanzará tu mano izquierda,
-         D7
-o tu derecha me agarrará.
-
-Mas si digo: ¡Que al menos la tiniebla
-me encubra, que la luz se haga noche
-en torno a mí!
-La noche es clara como el día.
-La tiniebla no es oscura para ti.
-
-[Verso 3 / Final]
-   C               D
-¿Adónde iré lejos de tu aliento,
-G          G/F#           Em
-a dónde escaparé de tu mirada?
-      Am            D7
-Allí estás tú, allí te encuentro. (x2)
-
-             C             D
-Tú has creado mis entrañas,
-   G       G/F#        Em
-en el seno materno me tejiste.
-      Am D7
-Te doy gracias.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Descalzos",
-  artist: "Hakuna",
-  key: "A",
-  capo: "Cejilla 2",
-  content: `[Verso 1]
-           A
-Quiero vivir, vivir
-    F#m
-ser libre y equivocarme,
-           Bm
-sentir el frío, el dolor...
-           E
-¡emocionarme!
-                    A Amaj7
-Mancharme entera
-y reír y llorar,
-abrir nuevos caminos
-¡y soñar!
-
-[Coro]
-     A
-Vivir mi vida con los pies
-descalzos,
-F#m
-matar la indiferencia,
-            Bm
-gritar al cielo: ¡Libertad!
-G                  E
-¡Libertad! ¡Libertad!
-
-[Verso 2]
-Nadar a contracorriente,
-con el latido de las olas respirar tu Belleza ¡y disfrutar!
-Ser como un niño, despierto mientras duermen,
-sin resguardarme y vivir, ¡y vivir!
-
-[Coro]
-Vivir mi vida con los pies descalzos,
-matar la indiferencia,
-gritar al cielo: ¡Libertad!
-Vivir mi vida con los pies descalzos,
-mojarme en la tormenta,
-romper mis miedos y volver,
-a ser yo, otra vez.
-
-[Puente]
-    A
-Tormentas y calmas,
-C#m
-amor y dolor,
-F#m
-miedo y valor,
-lucha y descanso,
-E                 E7
-sufrimiento y felicidad.
-    A
-¡Es caos y armonía!
-¡Es sobrecogedora!
-      C#m
-¡Es perfecta!
-F#m   E
-Es todo Belleza.
-
-[Verso 3]
-A
-Loca por vivir, por ver
-                               C#m
-descubrir, por buscar
-          Bm
-Por maravillarme, por amar,
-              C#m
-por arder
-              E
-¡Y abrirme a mi Verdad!
-
-[Coro Final]
-Vivir mi vida con los pies descalzos,
-matar la indiferencia,
-gritar al cielo: ¡Libertad! ¡Libertad!
-Vivir mi vida con los pies descalzos,
-mojarme en la tormenta,
-romper mis miedos y volver,
-a ser yo, otra vez.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Un segundo",
-  artist: "Hakuna",
-  key: "G",
-  capo: "Cejilla 3",
-  content: `[Verso 1]
-Si por un segundo vieras
-           Cadd9
-cómo te miro,
-           Cm
-cuando duermes, cierras los ojos,
-        G
-yo ahí sigo.
-D
-Se me cae la baba,
-       G G/F# Em
-imposible no mirar.
-     C
-No quiero dejar de hacerlo,
-          D
-no lo intentes imaginar.
-
-Si por un segundo vieras cómo te escucho,
-cada ruido, cada palabra
-y cuando no hablas mucho.
-Y hables o estés callado,
-solo me importa si estás.
-En mi amor cabe el silencio,
-cabe hablar y mucho más.
-
-[Estribillo]
-G
-Reviento de amor,
-          C
-estoy temblando de gozo.
-   D
-Te como con la mirada,
-      B7           Em D
-estás aquí y no estás solo.
-
-[Verso 2]
-Cada lágrima, cada risa
-en mi memoria se han grabado.
-Cada detalle de tu cuerpo
-y de tu alma fueron pensados.
-No creo que aguante más,
-contenerme aquí detrás.
-Quiero entrar, hacerte mío,
-                            C
-curar tu herida si me la das.
-
-        C
-Si por un segundo vieras cómo te
-   D                              G
-miro, no querrías ver nada más.
-
-[Verso 3]
-Si por un segundo vieras cuánto te amo,
-yo solo sé entregarme, aunque sea en vano.
-Y tiemblo al imaginar cuando llegues al Cielo,
-costará respirar en el abrazo que nos daremos.
-
-Si por un segundo vieras lo que hay por llegar,
-lo que aguarda escondido, casualidades sin azar.
-Lo sueño tantas veces en cada don que puedo hacer,
-tú recibes mi regalo, al Cielo miras a agradecer.
-
-[Estribillo 2]
-G
-Reviento de amor,
-          C
-estoy temblando de gozo.
-   D
-Hay tanta locura en este
-B7      Em D
-amor que no controlo
-Pierde tu vida,
-recibirás la eternidad,
-la alegría de ser esclavo,
-esclavo de mi libertad.
-
-        C
-Si por un segundo vieras cómo te
-   D                              G CG
-miro, no querrías ver nada más.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Huracán",
-  artist: "Hakuna",
-  key: "G",
-  capo: "Cejilla 5",
-  content: `[Verso 1]
-G                       D
-Me he hecho tantas preguntas
-Em                C
-intentando entender,
-G                    D
-me he lanzado a buscarte
-Em           C
-sin saberte ver.
-
-Me he asomado al abismo,
-me he atrevido a saltar y caer.
-
-G D Em C
-
-[Estribillo]
-          G D
-Y un huracán
-          Em                     C
-romperá el cielo desde mi garganta
-          G             D
-gritándote "¿dónde estás
-                     Em C
-cuando me haces falta?"
-
-G D Em C (x2)
-
-[Verso 2]
-Y me han dado respuestas
-pero no sé qué hacer,
-he prometido seguirte sin entender.
-Y hay un eco en lo hondo
-que me empuja hacia ti,
-y aunque sea sin sentirte te buscaré.
-
-[Estribillo]
-Y un huracán
-romperá el cielo desde mi garganta
-gritándote "¿dónde estás
-cuando me haces falta?" (x2)`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Pluma de Escribano",
-  artist: "Hakuna",
-  key: "D",
-  capo: "Cejilla 5",
-  content: `INTRO: D F#m Bm G A D
-
-      D                  F#m Bm
-Me brota del corazón un poema bello,
-   G                      A
-recito mis versos a un rey;
-      D            A             G A
-mi lengua es ágil pluma de escribano.
-
-Eres el más bello de los hombres,
-en tus labios se derrama la gracia,
-el Señor te bendice eternamente.
-
-G                     A
-Cíñete al flanco la espada, valiente:
-         D                Bm
-es tu gala y tu orgullo;
-   G
-cabalga victorioso por la verdad y la
-   A
-justicia, tu diestra te enseñe a realizar
-      D
-proezas.
-
-      A            G
-Tus flechas son agudas,
-      A            G
-los pueblos se te rinden,
-         A                         D D7
-se acobardan los enemigos del rey.
-
-Tu trono, oh Dios,
-permanece para siempre,
-cetro de rectitud es tu cetro real;
-has amado la justicia y odiado la
-impiedad:
-por eso el Señor, tu Dios, te ha ungido
-con aceite de júbilo
-entre todos tus compañeros.
-
-D F#m Bm G A D
-
-   D               F#m
-A mirra, áloe y acacia huelen tus
-      Bm
-vestidos,
-G                             A
-desde los palacios de marfiles
-         D A        G (A)
-te deleitan las arpas.
-
-Hijas de reyes salen,
-salen a tu encuentro,
-de pie a tu derecha está la reina,
-enjoyada con oro de Ofir.
-
-            G                          A
-Escucha, hija, mira: inclina el oído,
-   D                    Bm
-olvida tu pueblo y la casa paterna;
-             G
-prendado está el rey de tu belleza:
- A                                   D
-póstrate ante él, que él es tu señor.
-         A                          G
-La ciudad de Tiro viene con regalos,
-      A          G A                    D D7
-los pueblos más ricos buscan tu favor.
-
-G                             A
-Ya entra la princesa, bellísima,
-         D                  Bm
-vestida de perlas y brocado;
-                   G
-la llevan ante el rey,
-                    Bm
-con séquito de vírgenes,
-      F#m                  G
-la siguen sus compañeras:
-         Bm                D        G
-las traen entre alegría y algazara,
-        (A)
-van entrando en el palacio real.
-
-D F#m Bm G A D
-
-   D                       F#m
-A cambio de tus padres,
-           Bm
-tendrás hijos,
-G                A
-que nombrarás príncipes por
-           G A
-toda la tierra.
-
-D                       F#m         Bm
-Quiero hacer memorable tu nombre
-G                A
-por generaciones y generaciones,
-         D       A G Gm
-y los pueblos te alabarán
-                           D F#m Bm G A D
-por los siglos de los siglos.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Nacidos de lo alto",
-  artist: "Hakuna",
-  key: "Em",
-  capo: "Cejilla 2",
-  content: `[Verso 1]
-Em                    G
-Qué enfermo corazón,
-                   D
-que te dice que no.
-Am                          Bm
-Que da hasta dos mil vueltas
-       C
-sobre la razón, sufre en la fricción
-           D
-entre el mundo y tu amor.
-
-                            Em
-Qué humano y vacío se queda el dolor
-       C           D            G
-al sobrevivir, y no vivir contigo.
-
-[Coro]
-       Em
-Soy nacido de lo alto,
-       Bm
-resurgido en el Jordán.
-             C
-Con agua y fuego me sellaste,
-G                        D
-mi destino, la eternidad.
-          Em
-Ha empezado la batalla,
-    Bm
-en cada corazón.
-          C
-Los cojos corren los mudos claman:
-       C                    D
-la victoria inevitable del Amor.
-
-          G
-Mi corazón mira hacia Oriente
-    C                    D
-en espera de su Salvador.
-    Bm                Em
-No quiero hacer esperar
-                   C               D
-a un Cielo que ha empezado ya.
-   Bm                                 Em
-Los ciegos nunca vimos tanto color,
-       C                        D
-ni muertos tan vivos por amor.
-
-[Verso 2]
-   Em              G
-Y que prometida salvación,
-   D
-que ya comenzó.
-         Am                  Bm
-En alianza a su pueblo, alianza
-conmigo,
-         C
-eres fiel a mí, Tú me has elegido.
-D
-Unidos Tú y yo, recorriendo el camino
-   Em              C
-y si trato de huir, o miro a otro lado
-D                  G
-gobiernas tú mis pasos.
-
-[Final]
-   Em              G
-Y que prometida salvación,
-   D
-que ya comenzó.
-         Am                  Bm
-En alianza a su pueblo, alianza
-conmigo,
-         C
-eres fiel a mí...`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "¿Por qué lloras?",
-  artist: "Hakuna",
-  key: "C",
-  capo: "Cejilla 2",
-  content: `[Verso 1]
-C
-Han pasado ya tres días desde que se fue.
-Am
-Todavía no entiendo cómo le ha pasado esto a él.
-F
-Al que más amaba, al que por Amor vivía.
-               G
-Se me encoge el corazón al ver tan rota a María.
-
-Cojo unas colonias y voy a visitarle.
-Llamo a mis amigas para acompañarme.
-Y de camino no podemos evitar
-lágrimas que caen al recordar.
-
-[Pre-estribillo]
-   Am
-Llegamos al sepulcro, la piedra han movido.
-F
-No entendemos nada,
-                        C
-el sepulcro está vacío.
-   Am
-¿Qué es lo que ha pasado? ¿Acaso lo han robado?
-   F
-Y cuando miro dentro, un ser de luz sentado,
-      G
-que susurra a mi lado.
-
-[Estribillo]
-F                             G
-No entiendo mujer, ¿por qué lloras?
-C
-¿Por qué buscáis entre los muertos?
-C7
-F              G
-Él no está aquí, ¡ha resucitado!
-C
-Recordad cuando os dijo
-C7
-que debía ser entregado,
-              F
-por vuestros pecados,
-        G
-ser crucificado.
-   C                         Dm G
-Pero que al tercer día, volvería.
-
-[Verso 2]
-Paz en mis entrañas, amor inexplicable,
-solo quiero gritarlo: ¡Dios existe! ¡Dios es grande!
-Lágrimas ahora de felicidad.
-Nos han regalado la eternidad.
-
-[Estribillo Final]
-D                            (A)
-No entiendo mujer, ¿por qué lloras?
-D
-¿Por qué buscáis entre los muertos?
-D7
-             G            A
-Él no está aquí, ¡ha resucitado!
-                 D
-Recordad cuando os dijo
-                 D7
-que debía ser entregado,
-              G
-por vuestros pecados,
-        A
-ser crucificado.
-   D                            Em A
-Pero que al tercer día, volvería.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Entre anestesias",
-  artist: "Hakuna",
-  key: "C",
-  capo: "Cejilla 3",
-  content: `[Verso 1]
-C           G
-Toda la belleza
-            F
-que me rodea,
-    C
-que despierta en mí
-G                  F
-un mayor porqué.
-C                  G
-Cuanto más abres los ojos
-Dm
-menos ves.
-       F              G
-¿Por qué yo? ¿Por qué aquí?
-    C
-Y todo es.
-
-Me enamoro, sonrío, lloro,
-se me eriza la piel.
-Si me rompo me asusto y corro,
-no sé hacia quién.
-Todo apunta a algo, es más loco creer
-que es azar, que aquí no hay más y no hay un quién.
-
-[Puente]
-F
-Entre las anestesias
-         C
-y la hipnosis de lo sensible,
-     F
-he bajado los brazos,
-relajado los puños,
-           G
-he encontrado algo puro
-que me deja ser niño.
-            F
-Alguien que no conozco
-el artista más vivo.
-  G
-Y algo se ha removido
-             Dm
-en lo profundo.
-
-Dm C G
-Ooooh oooh oooh (x2)
-
-[Estribillo]
-   C
-Hay algo tan romántico,
-      G
-tan inmenso e infinito.
-      E7
-Hay tanta belleza que asusta,
-           Am            G
-porque me pone en el segundo
-F
-sitio.
-        Dm                Am
-Pero hoy el miedo es distinto,
-G                   Dm
-todo lo real es heredad.
-C
-Hoy el dolor es acompañado,
-G
-hoy soy hijo soy amado.
-F                               C
-Hoy soy con, soy para, soy rodeado
-G                             Dm
-por el abrazo de alguien tan real,
-                        Fm
-que tiene que ser verdad.
-
-[Verso 2]
-He pasado de lo casual a lo causal.
-He cruzado el umbral con miedo y al final,
-lo reconozco, soy pequeño y eres tan real.
-Estás aquí, la relación da un paso más.
-Los colores que me faltaban han llovido de ti.
-Sin embargo es mi decisión buscarte en mí.
-Lo creado y admirado me apunta a Ti.
-Yo decido si profundizo o me quedo aquí.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Dime Padre",
-  artist: "Hakuna",
-  key: "Am",
-  capo: "Cejilla 2",
-  content: `[Verso 1]
-      Am
-Dime Padre,
-                 Dm7
-¿qué podemos hacer?
-              G
-Tus hijos se pierden
-   E7                  Am G
-y no entiendo por qué.
-
-       Am
-Dime Padre,
-           Dm7
-cada día se alejan más
-y de verdad que
-   G               E7
-no he hecho nada mal,
-                   Am
-pero curan sus heridas
-           G
-con lo que no les curará.
-
-F                             Am
-Les di el mandamiento del Amor,
-                           G
-me crucificaría mil veces más,
-                           C
-pero ellos huyen de su Creador
-           E7
-y de su eterna felicidad.
-
-F                                 Dm7
-Y es que los hemos hecho tan libres
-                       G
-que a veces me duele pensar
-                       E7
-que este don y este regalo
-                       Am
-lo utilicen para el mal.
-
-[Verso 2]
-       Am
-Dime Padre,
-                         Dm7
-cómo a nuestra familia reunir.
-Les ofrecemos la eternidad,
-Dm7          E7
-                Am
-c ómo parar este dolor.
-
-                    E7
-Quiero que me quieran
-                        Am A7
-pero no es su obligación.
-              Dm G
-Les miro con mis ojos,
-                    C
-llenos de compasión
-                    Dm
-y te aseguro que acepto
-                    C
-cualquier tipo de perdón.
-
-                Dm7
-Solo nos queda esperar
-                        Am
-a que escuchen nuestra voz,
-                        C
-que vean las puertas abiertas
-                 G
-de este Cielo acogedor.
-Dm7
-Que siempre serán bienvenidos
-                        Am
-a los brazos de este Corazón,
-                           C
-que solo quiere verlos unidos
-     G/B                      F Fm
-en la tierra con su Salvador.
-
-[Verso 3]
-       Am
-Dime Padre,
-                         Dm7
-cómo les explicamos, que son
-G   E7 Am G
-lo que más amamos.
-
-       Am
-Dime Padre,
-               Dm7
-cómo les guiamos
-a aquello que les completa
-       E7           Am
-si es que se refugian en falsas metas.
-
-F
-Y nos destroza verles odiarse,
-Fm                            Am
-verles odiarse con tanta fuerza.
-        Am
-Dime Padre, qué puedo hacer.
-                       Dm7
-Tus hijos se pierden y se alejan
-                   E7                   Am
-y me da miedo que no sepan volver.
-
-[Puente]
-          Am
-Y me hago Pan pero no me ven,
-                       Dm7
-me cuelo en sus pensamientos pero
-no me ven,
-                 G
-me meto en sus entrañas
-            E7
-una y otra vez,
-C              G/B
-lloro todos los días pero no me ven.
-
-[Final]
-F         G               C
-Papá, ¿dejarán de llorar?
-               F
-Espero que estos caminos vacíos
-   G                C
-se puedan solucionar.
-      F             G             C
-Esperaré hasta el último segundo
-   G Bb                F
-para volverlo a intentar.
-        G
-No me rendiré,
-                   Fm Bb - G
-quiero a tus hijos de verdad.
-
-F                                 G
-No ven que el Bien ya ha vencido,
-               C G/B
-que la serpiente que les hace
-   Am G
-temblar
-                        F
-ya la ha pisado mi Madre,
-                             G
-¡Solo tienen que mirarme y
-   C
-vivirán!`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "La fila",
-  artist: "Hakuna",
-  key: "Am",
-  capo: "Cejilla 4",
-  content: `E/Am: 0-1-1-2-0-0
-INTRO: Am E/Am Am7 E/Am
-
-Am                  E/Am Am7 - E/Am
-La fila más importante de mi vida
-Unos minutos me separan del
-momento.
-          Am
-De encontrarme con mi amante
-    Am/G
-cara a cara con Dios Carne.
-    Fsus2
-No soy digno de que entres en mi casa
-          G                  E7
-pero una palabra tuya bastará para
-sanarme.
-
-Am E/Am Am7 E/Am
-
-    Am                       G
-Cada segundo se hace una eternidad,
-    C                        G
-si es para tenerte no importa esperar.
-Y tengo este hormigueo que no cesa
-hasta que te veo.
-Cada paso hacia adelante es un paso
-hacia el Cielo.
-
-Am E/Am Am7 E/Am
-
-[Puente]
-Am
-Y ligeramente elevado,
-       C
-y con un Amén contestado.
-     G
-Por fin frente a un Pan que se ha
-           E7
-hecho humano.
-
-[Estribillo]
-                 F     C G
-Y cuando el Cuerpo de Cristo,
-             Am
-se une a mí,
-me transformo, me hago uno
-con quién más me ama.
-Ese el que sacia el hambre
-de todo existir.
-El sagrario hacia el que siempre
-estoy arrodillada.
-
-                      F
-Si los ángeles hablaran,
-              C               G
-concienciarían nuestra alma.
-Es el Rey de los amores,
-quien nos alimenta y habla.
-A quien todo el Cielo alaba. (x2)
-
-F C G E7
-
-   Am            (G)
-Aprieto mis costados,
-         Am             (G)
-para que sientas mis abrazos.
-Que Dios no está en el pan,
-que Dios es este Pan,
-que yo mismo lo he tocado
-con mis labios.
-
-       Am                     G
-Busca un hueco en mi corazón,
-       C                         G
-limpia todo lo que hay en mi interior
-Que está boca que Tú tocas
-solo sepa hablar el lenguaje,
-el lenguaje del Amor.
-
-Am E/Am Am7 E/Am
-
-[Final]
-F                        C
-Y ahora que ya estás conmigo Señor,
-G                 Am
-hazme saber que estás vivo en mí.
-Que no eres un alimento más,
-que es tu cuerpo inmolado por mí.
-Y ahora que ya estás conmigo Señor
-G         E7          Am            G
-hazme saber que estás vivo en mí.
-Ahora ya soy miembro de tu Cuerpo,
-G             Am                    D-F
-unido a mis hermanos en Ti.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Trueno",
-  artist: "Hakuna",
-  key: "C",
-  capo: "Cejilla 3",
-  content: `[Verso 1]
-                 F G
-He visto una luz,
-                      C
-que ha cegado el cielo.
-Me he visto morir,
-atada a este suelo.
-Y he vuelto a nacer,
-con tu dulce sueño.
-Solo para morir,
-por seguir viviendo.
-
-            Am
-Y en tu costado,
-            C
-nace un recuerdo,
-            Am
-que sea abrigo,
-F        G C
-con el frío invierno.
-
-[Estribillo]
-                F
-Y se oye un trueno en la noche
-            C
-detrás de mí.
-                 F
-Me empuja el eco y me arrastra
-         C
-hacia Ti.
-                Am       F
-Tranquila y quieta,
-                    C
-hoy me dejo vivir.
-                    Am
-Tranquila y quieta,
-F G C
-por Ti.
-
-Dm Em G E Am C D
-
-[Verso 2]
-                 C D
-Me tienes aquí,
-                        G
-antes que hubiera tiempo.
-Y aquí seguiré,
-muriendo por tus huesos.
-
-Y deseando que escuches,
-lo mucho que te quiero.
-Y si me dejas verás,
-lo que solo yo puedo.
-
-      Em
-Y en mi costado,
-                        G
-mueren tus miedos.
-    Em
-Y en ese frío,
-C D              G
-arde este fuego.
-
-[Estribillo 2]
-                C
-Y se oye un trueno en la noche
-              G
-detrás de ti.
-                C
-Te empuja el eco y te arrastra
-          G
-hacia mí.
-              Em C
-Tranquila y quieta,
-                    G
-hoy te dejas vivir.
-              Em
-Tranquila y quieta,
-C D G
-por mí.
-
-G D Em D
-
-Y se oye un trueno en la noche.
-Y se oye un trueno.
-Detrás de Ti.
-Detrás de mí.
-
-Me empuja el eco y me arrastra.
-Hacia mí.
-Hacia Ti.
-
-Y se oye un trueno en la noche (x3)
-
-Me empuja el eco y me arrastra (x3)
-
-Me empuja el eco y me arrastra a Ti.`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Ruah",
-  artist: "Hakuna",
-  key: "G",
-  capo: "",
-  content: `INTRO: G
-
-      G
-Mira este corazón,
-no desea nada más que
-       Em
-encontrarse con Tu Amor.
-                C
-Envíanos Tu Espíritu, oh Dios,
-                         G
-derrámalo, derrámalo.
-
-Mira este corazón,
-no desea nada más que
-encontrarse con Tu Amor.
-Envíanos Tu Espíritu, oh Dios,
-                         D
-derrámalo, derrámalo.
-
-C                               D
-Sé que ahora escuchas Tú mi voz.
-                          G
-Ven, date prisa en socorrer a este
-            C
-grito, a este clamor.
-C                      D
-Ven ahora a mi interior,
-                             G
-ven a irrumpir con Tu gran fuerza
-                          C
-y Tu poder transformador.
-
-Envíanos Tu Espíritu, oh Dios,
-   G
-derrámalo.
-
-Mira este corazón,
-solo Tú puedes llenar
-ese vacío, ese dolor.
-Envíanos Tu Espíritu, oh Dios,
-derrámalo, derrámalo. (x2)
-
-Sé bien que Tú en mí quieres vivir,
-que mi deseo es la entrada
-para que vengas a mí.
-Ven, que no te quiero dejar ir
-quiero escucharte y dejar que seas
-Tú quien viva en mí.
-Sé que todos buscan como yo,
-que está gimiendo el universo,
-que este canto es su expresión.
-Ven, que el cosmos y la creación
-ya no contienen ese anhelo,
-ya no aguantan el ardor.
-
-Envíanos Tu Espíritu, oh Dios, derrámalo.
-Derrámalo (x4)`
-},
-
-// ─────────────────────────────────────────────
-{
-  title: "Los coros del universo",
-  artist: "Hakuna",
-  key: "Am",
-  capo: "",
-  content: `[Intro]
-Am F C G (x2)
-
-[Coro]
-Am            Fmaj7
-Los coros del universo te aclaman
-C             G
-a Ti, a Ti para siempre. (x2)
-
-[Verso 1]
-F                          Am
-Con la Palabra y con Tu aliento,
-          C
-creaste el mundo para mí,
-                    G
-estableciste espacio y tiempo.
-Sostienes cada momento,
-hoy te encuentro, vengo a Ti.
-
-Reconocemos Tu grandeza,
-en el silencio de Tu sí,
-nos estremece Tu belleza.
-Ahora estando en Tu presencia,
-postrarnos ante Ti,
-solo ante Ti.
-
-F             G
-Grandes y maravillosas,
-Fmaj7         Gsus4 - G
-son todas Tus obras.
-
-[Coro]
-F             Am
-Los coros del universo te aclaman
-C             G
-a Ti, a Ti para siempre. (x2)
-
-[Verso 3]
-F                          Am
-Con la Palabra y con Tu aliento,
-hiciste al hombre para Ti,
-nos haces hijos en Tu Hijo.
-Todo fue creado por Él,
-y para Él.
-
-F             G
-Grandes y maravillosas,
-Fmaj7         Gsus4 - G
-son todas Tus obras.
-
-[Coro]
-F             Am
-Los coros del universo te aclaman
-C             G
-a Ti, a Ti para siempre. (x4)
-
-[Verso 2]
-C             Fmaj7
-Gloria, gloria a Ti,
-      Am
-gloria a Ti,
-            G
-a Ti para siempre. (x4)
-
-[Coro]
-F             Am
-Los coros del universo te aclaman
-C             G
-a Ti, a Ti para siempre. (x2)`
-},
-
-]; // END SONGS
-
-// ══════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════
-buildSongList();
 
 // ── Sidebar móvil
 function openSidebar() {
@@ -5452,12 +859,327 @@ function closeSidebar() {
   document.getElementById('sidebarOverlay').classList.remove('show');
   document.body.style.overflow = '';
 }
-// Registrar Service Worker para modo offline (PWA)
+
+// ── Búsqueda
+function filterSongs(q) { buildSongList(q); }
+
+function buildSongList(q = '') {
+  const list = document.getElementById('songList');
+  list.innerHTML = '';
+  const lq = q.toLowerCase();
+  const pinHistory = loadTransposeHistory();
+  const notes = loadNotes();
+
+  SONGS.forEach((song, idx) => {
+    if (lq && !song.title.toLowerCase().includes(lq) && !song.artist.toLowerCase().includes(lq)) return;
+
+    const el = document.createElement('div');
+    el.className = 'song-item' + (idx === currentSongIdx ? ' active' : '');
+
+    const hasPinned = pinHistory[String(idx)] !== undefined;
+    const hasNote = !!notes[String(idx)]?.trim();
+    const badgesHtml = (hasPinned || hasNote) ? `
+      <span class="song-item-badges">
+        ${hasPinned ? '<span class="badge-pin">📌</span>' : ''}
+        ${hasNote  ? '<span class="badge-note">📝</span>' : ''}
+      </span>` : '';
+
+    el.innerHTML = `
+      <div class="song-item-info" onclick="showSong(${idx})">
+        <div class="song-item-title">${song.title}</div>
+        <div class="song-item-artist">${song.artist || '&nbsp;'}</div>
+      </div>
+      ${badgesHtml}
+      <button class="song-item-add-btn" onclick="event.stopPropagation();openAddToListModal(${idx})" title="Agregar a lista">＋</button>
+    `;
+    list.appendChild(el);
+  });
+}
+
+// ── Pin de transposición
+function loadTransposeHistory() {
+  try { return JSON.parse(localStorage.getItem('cantoral_transpose') || '{}'); }
+  catch { return {}; }
+}
+function saveTransposeHistory(h) { localStorage.setItem('cantoral_transpose', JSON.stringify(h)); }
+
+function togglePinTranspose() {
+  if (currentSongIdx === null) return;
+  const h = loadTransposeHistory();
+  const key = String(currentSongIdx);
+  if (h[key] !== undefined) { delete h[key]; } else { h[key] = currentSemitones; }
+  saveTransposeHistory(h);
+  updatePinBtn();
+  buildSongList(document.getElementById('searchInput').value);
+}
+function updatePinBtn() {
+  const btn = document.getElementById('pinBtn');
+  if (!btn || currentSongIdx === null) return;
+  const h = loadTransposeHistory();
+  const pinned = h[String(currentSongIdx)] !== undefined;
+  btn.textContent = pinned ? '📌' : '📍';
+  btn.classList.toggle('pinned', pinned);
+  btn.title = pinned ? 'Tono guardado — click para olvidar' : 'Guardar este tono';
+}
+
+// ── Notas personales
+function loadNotes() {
+  try { return JSON.parse(localStorage.getItem('cantoral_notes') || '{}'); } catch { return {}; }
+}
+function saveNotes(n) { localStorage.setItem('cantoral_notes', JSON.stringify(n)); }
+
+function saveNote() {
+  if (currentSongIdx === null) return;
+  const notes = loadNotes();
+  const val = document.getElementById('noteTextarea').value;
+  if (val.trim()) { notes[String(currentSongIdx)] = val; } else { delete notes[String(currentSongIdx)]; }
+  saveNotes(notes);
+  updateNoteBtn();
+  if (currentView === 'all') buildSongList(document.getElementById('searchInput').value);
+}
+function updateNoteBtn() {
+  if (currentSongIdx === null) return;
+  const notes = loadNotes();
+  const has = !!notes[String(currentSongIdx)]?.trim();
+  const btn = document.getElementById('noteToggleBtn');
+  if (btn) { btn.textContent = has ? '📝' : '📝'; btn.classList.toggle('has-note', has); }
+}
+function toggleNotePanel() {
+  const panel = document.getElementById('notePanel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : '';
+  if (!isOpen && currentSongIdx !== null) {
+    const notes = loadNotes();
+    document.getElementById('noteTextarea').value = notes[String(currentSongIdx)] || '';
+  }
+}
+
+function loadSongExtras(idx) {
+  const h = loadTransposeHistory();
+  if (h[String(idx)] !== undefined) currentSemitones = h[String(idx)];
+  updatePinBtn();
+  updateNoteBtn();
+  const notePanel = document.getElementById('notePanel');
+  if (notePanel.style.display !== 'none') {
+    const notes = loadNotes();
+    document.getElementById('noteTextarea').value = notes[String(idx)] || '';
+  }
+}
+
+// ── Vista selector
+function switchView(v) {
+  currentView = v;
+  document.getElementById('tabAll').classList.toggle('active', v === 'all');
+  document.getElementById('tabPlaylists').classList.toggle('active', v === 'playlists');
+  document.getElementById('panelAll').style.display = v === 'all' ? 'flex' : 'none';
+  document.getElementById('panelPlaylists').style.display = v === 'playlists' ? 'flex' : 'none';
+  if (v === 'playlists') renderPlaylistPanel();
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  PLAYLISTS
+// ══════════════════════════════════════════════════════════════════
+
+function loadPlaylists() {
+  try { return JSON.parse(localStorage.getItem('cantoral_playlists') || '[]'); } catch { return []; }
+}
+function savePlaylists(p) { localStorage.setItem('cantoral_playlists', JSON.stringify(p)); }
+
+function renderPlaylistPanel() {
+  const pls = loadPlaylists();
+  const toolbar = document.querySelector('.pl-toolbar');
+  if (!toolbar.querySelector('.pl-new-btn')) {
+    toolbar.innerHTML = '<button class="pl-new-btn" onclick="createPlaylist()">＋ Nueva lista</button>';
+  }
+  const wrap = document.getElementById('plSelectorWrap');
+  const emptyEl = document.getElementById('plEmpty');
+  if (pls.length === 0) {
+    wrap.style.display = 'none';
+    emptyEl.style.display = 'block';
+    document.getElementById('playlistSongList').innerHTML = '';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  wrap.style.display = 'flex';
+  const select = document.getElementById('plSelect');
+  select.innerHTML = pls.map((p, i) => `<option value="${i}" ${i === activePlIdx ? 'selected' : ''}>${p.name} (${p.songs.length})</option>`).join('');
+  let renameBtn = document.getElementById('plRenameBtn');
+  if (!renameBtn) {
+    renameBtn = document.createElement('button');
+    renameBtn.id = 'plRenameBtn';
+    renameBtn.title = 'Renombrar lista';
+    renameBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;font-size:14px;padding:6px 9px;transition:border-color .18s,color .18s;line-height:1;min-height:36px;';
+    renameBtn.textContent = '✏️';
+    renameBtn.onmouseenter = () => { renameBtn.style.borderColor='var(--accent)'; renameBtn.style.color='var(--accent2)'; };
+    renameBtn.onmouseleave = () => { renameBtn.style.borderColor='var(--border)'; renameBtn.style.color='var(--text-muted)'; };
+    renameBtn.onclick = renamePlaylist;
+    wrap.insertBefore(renameBtn, wrap.querySelector('.pl-delete-btn'));
+  }
+  renderPlaylistSongs(pls[activePlIdx]);
+}
+
+function renderPlaylistSongs(pl) {
+  const list = document.getElementById('playlistSongList');
+  list.innerHTML = '';
+  if (!pl || pl.songs.length === 0) {
+    list.innerHTML = '<div class="pl-empty" style="display:block">Esta lista está vacía.<br>Agrega canciones desde "Todas".</div>';
+    return;
+  }
+  pl.songs.forEach((songIdx, pos) => {
+    const s = SONGS[songIdx];
+    if (!s) return;
+    const el = document.createElement('div');
+    el.className = 'song-item-pl' + (songIdx === currentSongIdx ? ' active' : '');
+    el.innerHTML = `
+      <div class="pl-arrows">
+        <button class="pl-arrow" onclick="moveSong(${pos},-1)" ${pos===0?'disabled':''} title="Subir">▲</button>
+        <button class="pl-arrow" onclick="moveSong(${pos},1)" ${pos===pl.songs.length-1?'disabled':''} title="Bajar">▼</button>
+      </div>
+      <div class="song-item-pl-info" onclick="showSong(${songIdx})">
+        <div class="song-item-title">${s.title}</div>
+        <div class="song-item-artist">${s.artist || '&nbsp;'}</div>
+      </div>
+      <button class="pl-remove-btn" onclick="removeSongFromPlaylist(${pos})" title="Quitar">✕</button>`;
+    list.appendChild(el);
+  });
+}
+
+function selectPlaylist(val) {
+  activePlIdx = parseInt(val);
+  const pls = loadPlaylists();
+  renderPlaylistSongs(pls[activePlIdx]);
+}
+
+function createPlaylist() {
+  const toolbar = document.querySelector('.pl-toolbar');
+  if (document.getElementById('plNewInput')) return;
+  toolbar.innerHTML = `<div style="display:flex;gap:6px;align-items:center">
+    <input id="plNewInput" type="text" placeholder="Nombre de la lista..."
+      style="flex:1;background:var(--surface2);border:1.5px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;padding:8px 10px;outline:none;min-width:0"
+      onkeydown="if(event.key==='Enter')confirmNewPlaylist();if(event.key==='Escape')cancelNewPlaylist();"/>
+    <button onclick="confirmNewPlaylist()" style="background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:700;padding:8px 12px">✓</button>
+    <button onclick="cancelNewPlaylist()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;font-size:13px;padding:8px 10px">✕</button>
+  </div>`;
+  document.getElementById('plNewInput').focus();
+}
+function confirmNewPlaylist() {
+  const input = document.getElementById('plNewInput');
+  const name = input ? input.value.trim() : '';
+  if (name) { const pls = loadPlaylists(); pls.push({name, songs:[]}); savePlaylists(pls); activePlIdx = pls.length-1; }
+  renderPlaylistPanel();
+}
+function cancelNewPlaylist() { renderPlaylistPanel(); }
+
+function deletePlaylist() {
+  const pls = loadPlaylists();
+  if (!pls.length) return;
+  const name = pls[activePlIdx].name;
+  const wrap = document.getElementById('plSelectorWrap');
+  if (document.getElementById('plDeleteConfirm')) return;
+  const c = document.createElement('div');
+  c.id = 'plDeleteConfirm';
+  c.style.cssText = 'display:flex;gap:6px;align-items:center;padding:0 14px 8px;flex-shrink:0';
+  c.innerHTML = `<span style="flex:1;font-size:12px;color:var(--text-muted)">¿Eliminar "${name}"?</span>
+    <button onclick="confirmDeletePlaylist()" style="background:#ef4444;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:12px;font-weight:700;padding:6px 10px">Sí</button>
+    <button onclick="cancelDeletePlaylist()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;font-size:12px;padding:6px 10px">No</button>`;
+  wrap.insertAdjacentElement('afterend', c);
+}
+function confirmDeletePlaylist() {
+  const pls = loadPlaylists(); pls.splice(activePlIdx,1); savePlaylists(pls);
+  activePlIdx = Math.max(0, activePlIdx-1);
+  document.getElementById('plDeleteConfirm')?.remove();
+  renderPlaylistPanel();
+}
+function cancelDeletePlaylist() { document.getElementById('plDeleteConfirm')?.remove(); }
+
+function renamePlaylist() {
+  const pls = loadPlaylists();
+  if (!pls.length) return;
+  const wrap = document.getElementById('plSelectorWrap');
+  if (document.getElementById('plRenameInput')) return;
+  wrap.style.flexWrap = 'wrap';
+  const row = document.createElement('div');
+  row.id = 'plRenameInput';
+  row.style.cssText = 'display:flex;gap:6px;align-items:center;width:100%;margin-top:6px';
+  row.innerHTML = `<input id="plRenameField" type="text" value="${pls[activePlIdx].name}"
+    style="flex:1;background:var(--surface2);border:1.5px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;padding:7px 10px;outline:none;min-width:0"
+    onkeydown="if(event.key==='Enter')confirmRename();if(event.key==='Escape')cancelRename();"/>
+    <button onclick="confirmRename()" style="background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:700;padding:7px 12px">✓</button>
+    <button onclick="cancelRename()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;font-size:13px;padding:7px 10px">✕</button>`;
+  wrap.appendChild(row);
+  const f = document.getElementById('plRenameField'); f.focus(); f.select();
+}
+function confirmRename() {
+  const f = document.getElementById('plRenameField');
+  const name = f ? f.value.trim() : '';
+  if (name) { const pls = loadPlaylists(); pls[activePlIdx].name = name; savePlaylists(pls); }
+  cancelRename();
+}
+function cancelRename() {
+  document.getElementById('plRenameInput')?.remove();
+  document.getElementById('plSelectorWrap').style.flexWrap = '';
+  renderPlaylistPanel();
+}
+
+function moveSong(pos, dir) {
+  const pls = loadPlaylists(); const pl = pls[activePlIdx];
+  const newPos = pos + dir;
+  if (newPos < 0 || newPos >= pl.songs.length) return;
+  [pl.songs[pos], pl.songs[newPos]] = [pl.songs[newPos], pl.songs[pos]];
+  savePlaylists(pls); renderPlaylistSongs(pl);
+}
+function removeSongFromPlaylist(pos) {
+  const pls = loadPlaylists(); pls[activePlIdx].songs.splice(pos, 1);
+  savePlaylists(pls); renderPlaylistSongs(pls[activePlIdx]);
+}
+function addSongToPlaylist(plIdx, songIdx) {
+  const pls = loadPlaylists(); const pl = pls[plIdx];
+  if (!pl.songs.includes(songIdx)) { pl.songs.push(songIdx); savePlaylists(pls); }
+}
+
+// ── Modal agregar a lista
+let modalSongIdx = null;
+function openAddToListModal(songIdx) {
+  const pls = loadPlaylists();
+  modalSongIdx = songIdx;
+  const song = SONGS[songIdx];
+  document.getElementById('modalSongName').textContent = `${song.title} · ${song.artist}`;
+  const plList = document.getElementById('modalPlList');
+  if (pls.length === 0) {
+    plList.innerHTML = '<div class="modal-no-lists">No tienes listas aún.<br>Crea una desde "Mis listas".</div>';
+  } else {
+    plList.innerHTML = pls.map((pl, i) => {
+      const alreadyIn = pl.songs.includes(songIdx);
+      return `<div class="modal-pl-item ${alreadyIn?'already-in':''}" onclick="${alreadyIn?'':` addAndClose(${i})`}">
+        <span>${pl.name}</span>
+        <span class="modal-pl-badge">${alreadyIn ? '✓ Ya está' : pl.songs.length + ' canciones'}</span>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('modalOverlay').classList.add('show');
+  requestAnimationFrame(() => document.getElementById('addToListModal').classList.add('show'));
+}
+function addAndClose(plIdx) {
+  addSongToPlaylist(plIdx, modalSongIdx);
+  closeModal();
+  if (currentView === 'playlists') renderPlaylistPanel();
+}
+function closeModal() {
+  document.getElementById('addToListModal').classList.remove('show');
+  document.getElementById('modalOverlay').classList.remove('show');
+  modalSongIdx = null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════════
+loadSongs();
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('SW registrado:', reg.scope))
-      .catch(err => console.warn('SW error:', err));
+      .then(r => console.log('SW:', r.scope))
+      .catch(e => console.warn('SW error:', e));
   });
 }
 </script>
