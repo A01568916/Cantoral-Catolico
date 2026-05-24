@@ -27,7 +27,7 @@
     --chord: #f59e0b;
     --chord-hover: #fbbf24;
     --radius: 12px;
-    --font-mono: 'Courier New', Courier, monospace;
+    --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
   }
 
   /* ── Reset ── */
@@ -456,18 +456,22 @@
   .chord-line {
     color: var(--chord);
     font-weight: 700;
+    font-family: var(--font-mono);
     font-size: 1em;   /* hereda el tamaño del song-body */
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     display: block;
     white-space: pre;
+    line-height: 1.2;
   }
 
   .lyric-line {
     color: var(--text);
+    font-family: var(--font-mono);
     font-size: 1em;   /* hereda el tamaño del song-body */
+    letter-spacing: 0;
     display: block;
     white-space: pre;
-    line-height: 1.7;
+    line-height: 1.5;
   }
 
   .empty-line {
