@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agregar canto · Cantoral RiseUp 2026</title>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #22222f;
+    --border: #2e2e42;
+    --accent: #7c6af7;
+    --accent2: #a78bfa;
+    --text: #e8e8f0;
+    --text-muted: #888899;
+    --chord: #f59e0b;
+    --chord-hover: #fbbf24;
+    --ok: #22c55e;
+    --section: #a78bfa;
+    --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  h1 {
+    font-size: 22px;
+    color: var(--accent2);
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Layout 2 columnas ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    background: var(--surface2);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .panel-header h2 {
+    font-size: 14px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .panel-body { padding: 16px; }
+
+  /* ── Meta inputs ── */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .meta-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .meta-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  input[type="text"], textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  input[type="text"]:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* ── Textarea de entrada ── */
+  textarea#raw-input {
+    width: 100%;
+    min-height: 380px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre;
+    resize: vertical;
+    overflow-x: auto;
+  }
+
+  /* ── Botones ── */
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button:hover { background: var(--accent2); }
+  button.secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  button.secondary:hover { background: var(--border); }
+  button.small { padding: 4px 8px; font-size: 12px; }
+
+  /* ── Modo edición de líneas ── */
+  .line-editor {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+  .line-row {
+    display: grid;
+    grid-template-columns: 24px 90px 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .line-row:hover { background: var(--surface2); }
+  .line-num {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-align: right;
+    font-family: var(--font-mono);
+  }
+  .line-type-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .line-type-btn.chord { background: var(--chord); color: #1a1a24; border-color: var(--chord); }
+  .line-type-btn.lyric { background: var(--surface2); color: var(--text-muted); }
+  .line-type-btn.section { background: var(--section); color: #1a1a24; border-color: var(--section); }
+  .line-type-btn.empty { background: transparent; color: var(--text-muted); border-style: dashed; }
+  .line-content {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  .line-content.chord { color: var(--chord); font-weight: 700; }
+  .line-content.section { color: var(--section); font-weight: 600; text-transform: uppercase; font-size: 12px; }
+  .line-content.empty { opacity: 0.3; }
+
+  /* ── Preview ── */
+  .preview-body {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    min-height: 380px;
+    max-height: 600px;
+    overflow: auto;
+    font-size: 14px;
+  }
+  .preview-body .chord-line {
+    color: var(--chord);
+    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: 1em;
+    letter-spacing: 0;
+    display: block;
+    white-space: pre;
+    line-height: 1.2;
+  }
+  .preview-body .lyric-line {
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 1em;
+    letter-spacing: 0;
+    display: block;
+    white-space: pre;
+    line-height: 1.5;
+  }
+  .preview-body .section-label {
+    color: var(--accent2);
+    font-weight: 600;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .preview-body .section-label:first-child { margin-top: 0; }
+  .preview-body .empty-line { display: block; height: 10px; }
+
+  /* ── Actions bar ── */
+  .actions-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .actions-bar .spacer { flex: 1; }
+  .help-text {
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* ── Modal ── */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .modal.visible { display: flex; }
+  .modal-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .modal-content h2 { color: var(--accent2); font-size: 18px; }
+  .modal-content textarea {
+    flex: 1;
+    min-height: 350px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px;
+    border-radius: 6px;
+    white-space: pre;
+    overflow: auto;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ok);
+    color: #0a2e15;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .toast.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎵 Agregar canto al cantoral</h1>
+  <p class="subtitle">Pega el texto del canto, llena los datos, revisa el preview y copia el bloque para tu <code>index.html</code></p>
+
+  <!-- Metadatos -->
+  <div class="panel" style="margin-bottom: 16px;">
+    <div class="panel-body">
+      <div class="meta-grid">
+        <label>Título <input type="text" id="meta-title" placeholder="Ej. Noche"></label>
+        <label>Artista <input type="text" id="meta-artist" placeholder="Ej. Hakuna"></label>
+        <label>Tono <input type="text" id="meta-key" placeholder="Ej. Dm"></label>
+        <label>Capo <input type="text" id="meta-capo" placeholder="Ej. 3 o vacío"></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Acciones -->
+  <div class="actions-bar">
+    <button onclick="detectLines()">🔍 Detectar acordes/letra</button>
+    <button class="secondary" onclick="clearAll()">🗑️ Limpiar</button>
+    <div class="spacer"></div>
+    <button onclick="copySongsBlock()">📋 Copiar bloque SONGS</button>
+  </div>
+
+  <!-- Layout 3 pasos -->
+  <div class="grid" style="margin-bottom: 16px;">
+    <!-- PASO 1: Pegar -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>1. Pega el texto del canto</h2>
+      </div>
+      <div class="panel-body">
+        <textarea id="raw-input" placeholder="Pega aquí el canto con acordes encima de la letra...
+
+Ejemplo:
+       Dm                A#
+Por tu iglesia que te espera a oscuras
+       F        Am
+Por tu pueblo que te reza
+
+[Coro]
+Dm  A#  F  Am
+Te rogamos, te rogamos"></textarea>
+        <p class="help-text" style="margin-top: 8px;">
+          💡 Después de pegar, dale clic a "Detectar acordes/letra" para clasificar las líneas automáticamente.
+        </p>
+      </div>
+    </div>
+
+    <!-- PASO 2: Preview -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>2. Preview (cómo se verá en el cantoral)</h2>
+      </div>
+      <div class="panel-body">
+        <div class="preview-body" id="preview">
+          <p style="color: var(--text-muted); font-size: 13px;">El preview aparecerá aquí después de pegar y detectar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: Edición de líneas -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>3. Corregir clasificación (clic en cada botón para cambiar el tipo)</h2>
+      <span class="help-text">
+        <span style="color: var(--chord);">●</span> Acorde &nbsp;
+        <span style="color: var(--text);">●</span> Letra &nbsp;
+        <span style="color: var(--section);">●</span> Sección &nbsp;
+        <span style="color: var(--text-muted);">●</span> Vacía
+      </span>
+    </div>
+    <div class="panel-body">
+      <div class="line-editor" id="line-editor">
+        <p style="color: var(--text-muted); font-size: 13px; padding: 16px; text-align: center;">
+          Aún no has pegado texto. Pega el canto arriba y dale a "Detectar acordes/letra".
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal salida -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h2>Bloque listo para pegar en SONGS</h2>
+    <p class="help-text">Copia este bloque y pégalo dentro del array <code>const SONGS = [...]</code> en tu <code>index.html</code>.</p>
+    <textarea id="modal-text" readonly></textarea>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeModal()">Cerrar</button>
+      <button onclick="copyToClipboard()">📋 Copiar al portapapeles</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─── Estado ───
+  // Cada línea tiene: {text, type: 'chord'|'lyric'|'section'|'empty'}
+  let lines = [];
+
+  // ─── Detector de acordes ───
+  // Misma lógica que index.html (no es perfecto, pero es lo que tienes)
+  const CHORD_RE = /^[A-G][#b]?(m|maj|min|sus|dim|aug|add)?[0-9]*(\/[A-G][#b]?)?$/;
+
+  function isChordToken(t) {
+    if (!t) return false;
+    // Limpiar paréntesis/slashes para validar el núcleo
+    const core = t.replace(/^[(\[]+|[)\]]+$/g, '');
+    if (CHORD_RE.test(core)) return true;
+    // También acordes con sufijos como C9, Em7, Am7, C/G, F#m/A#
+    if (/^[A-G][#b]?[a-z0-9]{0,5}(\/[A-G][#b]?)?$/.test(core)) return true;
+    return false;
+  }
+
+  function isSectionLine(line) {
+    const t = line.trim();
+    // [Verso], [Coro], [Instrumental] : Em C, etc. (corchetes + cualquier cosa)
+    if (/^\[.+\]/.test(t)) return true;
+    // Verso:, Coro:, Estribillo:, Puente:, Pre-Chorus:, Intro: F-C-G, etc.
+    if (/^(verso|coro|estribillo|puente|intro|outro|pre[- ]?chorus|chorus|bridge|interludio|interlude|instrumental|primera parte|segunda parte|tercera parte|second part|first part)\b.*$/i.test(t)) return true;
+    return false;
+  }
+
+  function isChordLine(line) {
+    const trimmed = line.trim();
+    if (!trimmed) return false;
+    if (isSectionLine(line)) return false;
+
+    // Separar palabras "puras" — letras+símbolos
+    const tokens = trimmed.split(/\s+/);
+    if (tokens.length === 0) return false;
+
+    // Heurística más estricta:
+    // - Todos los tokens deben ser acordes válidos O conectores (//, |, -, etc.)
+    // - Si hay un token que NO es acorde Y tiene más de 2 letras minúsculas seguidas → es letra
+    let chordCount = 0;
+    let nonChordWordy = 0;
+    for (const t of tokens) {
+      // Quitar conectores y paréntesis envolventes
+      const cleaned = t.replace(/[\/\\|()\[\]\-–,;:]/g, '');
+      if (!cleaned) {
+        // puro separador, contar como acorde (no resta)
+        chordCount++;
+        continue;
+      }
+      if (isChordToken(cleaned)) {
+        chordCount++;
+        continue;
+      }
+      // Si tiene 3+ letras minúsculas seguidas, es palabra de letra
+      if (/[a-záéíóúñü]{3,}/.test(cleaned.toLowerCase())) {
+        nonChordWordy++;
+      }
+    }
+
+    // Si CUALQUIER token tiene una palabra "wordy" (3+ minúsculas seguidas) → es letra
+    if (nonChordWordy > 0) return false;
+
+    // Si la mayoría son acordes (o conectores) → es acorde
+    return chordCount / tokens.length >= 0.7 && trimmed.length < 60;
+  }
+
+  function classifyLine(rawLine) {
+    if (!rawLine.trim()) return 'empty';
+    if (isSectionLine(rawLine)) return 'section';
+    if (isChordLine(rawLine)) return 'chord';
+    return 'lyric';
+  }
+
+  // ─── Render ───
+  function detectLines() {
+    const raw = document.getElementById('raw-input').value;
+    if (!raw.trim()) {
+      showToast('Pega primero el texto del canto', 'warn');
+      return;
+    }
+    const arr = raw.split('\n');
+    lines = arr.map(text => ({
+      text: text,
+      type: classifyLine(text)
+    }));
+    renderLineEditor();
+    renderPreview();
+  }
+
+  function renderLineEditor() {
+    const ed = document.getElementById('line-editor');
+    if (lines.length === 0) {
+      ed.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; padding: 16px; text-align: center;">Aún no has pegado texto.</p>';
+      return;
+    }
+
+    ed.innerHTML = '';
+    lines.forEach((line, idx) => {
+      const row = document.createElement('div');
+      row.className = 'line-row';
+
+      const num = document.createElement('span');
+      num.className = 'line-num';
+      num.textContent = idx + 1;
+
+      const btn = document.createElement('button');
+      btn.className = 'line-type-btn ' + line.type;
+      btn.textContent = labelFor(line.type);
+      btn.onclick = () => cycleLineType(idx);
+
+      const content = document.createElement('span');
+      content.className = 'line-content ' + line.type;
+      // Mostrar texto preservando espacios; si es empty, mostrar placeholder
+      content.textContent = line.text === '' ? '(línea vacía)' : line.text;
+
+      row.appendChild(num);
+      row.appendChild(btn);
+      row.appendChild(content);
+      ed.appendChild(row);
+    });
+  }
+
+  function labelFor(type) {
+    return { chord: 'Acorde', lyric: 'Letra', section: 'Sección', empty: 'Vacía' }[type] || type;
+  }
+
+  function cycleLineType(idx) {
+    // Ciclo: lyric → chord → section → empty → lyric ...
+    const order = ['lyric', 'chord', 'section', 'empty'];
+    const current = lines[idx].type;
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    lines[idx].type = next;
+    renderLineEditor();
+    renderPreview();
+  }
+
+  function renderPreview() {
+    const target = document.getElementById('preview');
+    target.innerHTML = '';
+    if (lines.length === 0) {
+      target.innerHTML = '<p style="color: var(--text-muted); font-size: 13px;">El preview aparecerá aquí después de pegar y detectar.</p>';
+      return;
+    }
+
+    lines.forEach(line => {
+      let el;
+      if (line.type === 'empty') {
+        el = document.createElement('span');
+        el.className = 'empty-line';
+      } else if (line.type === 'section') {
+        // Si la sección tiene texto extra (ej. "[Instrumental] : E A C#m B")
+        // separamos el label de los acordes que vienen después
+        const t = line.text.trim();
+        const bracketMatch = t.match(/^\[([^\]]+)\](.*)$/);
+        const colonMatch = t.match(/^([^:]+?):\s*(.*)$/);
+        
+        let label = '';
+        let rest = '';
+        if (bracketMatch) {
+          label = bracketMatch[1].trim();
+          rest = bracketMatch[2].replace(/^[\s:]+/, '').trim();
+        } else if (colonMatch) {
+          label = colonMatch[1].trim();
+          rest = colonMatch[2].trim();
+        } else {
+          label = t.replace(/:$/, '').trim();
+        }
+        
+        const labelEl = document.createElement('div');
+        labelEl.className = 'section-label';
+        labelEl.textContent = label;
+        target.appendChild(labelEl);
+        
+        if (rest) {
+          // El resto son acordes — renderizar como chord-line
+          el = document.createElement('span');
+          el.className = 'chord-line';
+          el.textContent = rest;
+        } else {
+          // Nada más que añadir
+          return;
+        }
+      } else if (line.type === 'chord') {
+        el = document.createElement('span');
+        el.className = 'chord-line';
+        el.textContent = line.text;
+      } else {
+        el = document.createElement('span');
+        el.className = 'lyric-line';
+        el.textContent = line.text;
+      }
+      target.appendChild(el);
+    });
+  }
+
+  // ─── Generar bloque SONGS ───
+  function buildContent() {
+    // Convertir las líneas clasificadas de vuelta a texto que tu index.html entiende:
+    // - section → [Nombre]  (y si tiene acordes pegados, se ponen en línea siguiente)
+    // - chord → línea tal cual
+    // - lyric → línea tal cual
+    // - empty → línea vacía
+    const out = [];
+    for (const line of lines) {
+      if (line.type === 'empty') {
+        out.push('');
+        continue;
+      }
+      if (line.type === 'section') {
+        const t = line.text.trim();
+        // Separar label y posibles acordes después
+        const bracketMatch = t.match(/^\[([^\]]+)\](.*)$/);
+        const colonMatch = t.match(/^([^:]+?):\s*(.*)$/);
+        let label = '', rest = '';
+        if (bracketMatch) {
+          label = bracketMatch[1].trim();
+          rest = bracketMatch[2].replace(/^[\s:]+/, '').trim();
+        } else if (colonMatch) {
+          label = colonMatch[1].trim();
+          rest = colonMatch[2].trim();
+        } else {
+          label = t.replace(/:$/, '').trim();
+        }
+        out.push('[' + label + ']');
+        if (rest) out.push(rest);
+        continue;
+      }
+      out.push(line.text);
+    }
+    return out.join('\n');
+  }
+
+  function copySongsBlock() {
+    const title = document.getElementById('meta-title').value.trim();
+    const artist = document.getElementById('meta-artist').value.trim();
+    const key = document.getElementById('meta-key').value.trim();
+    const capo = document.getElementById('meta-capo').value.trim();
+    const content = buildContent();
+
+    if (!title) {
+      showToast('Falta el título', 'warn');
+      document.getElementById('meta-title').focus();
+      return;
+    }
+    if (!content.trim()) {
+      showToast('No hay contenido', 'warn');
+      return;
+    }
+
+    const block = `// ─────────────────────────────────────────────
+{
+  title: ${JSON.stringify(title)},
+  artist: ${JSON.stringify(artist)},
+  key: ${JSON.stringify(key)},
+  capo: ${JSON.stringify(capo)},
+  content: \`${content.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`
+},`;
+
+    document.getElementById('modal-text').value = block;
+    document.getElementById('modal').classList.add('visible');
+  }
+
+  function copyToClipboard() {
+    const ta = document.getElementById('modal-text');
+    ta.select();
+    document.execCommand('copy');
+    showToast('✓ Copiado al portapapeles');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('visible');
+  }
+
+  function clearAll() {
+    if (!confirm('¿Borrar todo lo que has llenado?')) return;
+    document.getElementById('raw-input').value = '';
+    document.getElementById('meta-title').value = '';
+    document.getElementById('meta-artist').value = '';
+    document.getElementById('meta-key').value = '';
+    document.getElementById('meta-capo').value = '';
+    lines = [];
+    renderLineEditor();
+    renderPreview();
+  }
+
+  // ─── Toast ───
+  function showToast(msg, kind) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = kind === 'warn' ? '#eab308' : 'var(--ok)';
+    t.classList.add('visible');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('visible'), 2000);
+  }
+
+  // Re-detectar automáticamente cuando se pega texto y han pasado >300ms sin escribir
+  let typingTimer;
+  document.getElementById('raw-input').addEventListener('input', () => {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+      if (document.getElementById('raw-input').value.trim() && lines.length === 0) {
+        detectLines();
+      }
+    }, 600);
+  });
+</script>
+</body>
+</html>
