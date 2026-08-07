@@ -1,15 +1,14 @@
 // ══════════════════════════════════════════════
-//  Service Worker — Cantoral RiseUp 2026
+//  Service Worker — Cantoral Evangelium
 //  Estrategia: Cache First → offline total
 // ══════════════════════════════════════════════
 
-const CACHE_NAME = 'cantoral-v3';
+const CACHE_NAME = 'cantoral-v8';
 
 const ASSETS = [
   './index.html',
   './manifest.json',
-  './icon.svg',
-  './icon-maskable.svg'
+  './icon.svg'
 ];
 
 // Instalar: precachear todos los assets

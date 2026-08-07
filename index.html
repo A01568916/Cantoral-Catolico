@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cantoral · RiseUp 2026</title>
+<title>Cantoral Evangelium</title>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json"/>
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Cantoral"/>
+<meta name="apple-mobile-web-app-title" content="Evangelium"/>
 <link rel="apple-touch-icon" href="icon.svg"/>
 <style>
   /* ── Variables ── */
@@ -1007,8 +1007,8 @@
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-header-text">
-        <div class="sidebar-title">✝ RiseUp 2026</div>
-        <div class="sidebar-sub">Regnum Christi · Cantoral</div>
+        <div class="sidebar-title">✝ Evangelium</div>
+        <div class="sidebar-sub">Cantoral católico</div>
       </div>
       <button class="sidebar-close" onclick="closeSidebar()" aria-label="Cerrar menú">✕</button>
     </div>
@@ -1053,7 +1053,7 @@
     <!-- Topbar visible solo en tablet/móvil -->
     <div class="topbar" id="topbar">
       <button class="topbar-menu-btn" onclick="openSidebar()" aria-label="Abrir menú">☰</button>
-      <span class="topbar-title">✝ Cantoral RiseUp 2026</span>
+      <span class="topbar-title">✝ Cantoral Evangelium</span>
     </div>
     <div class="welcome" id="welcomeScreen">
       <div class="welcome-icon">🎸</div>
@@ -1556,6 +1556,153 @@ function switchView(view) {
 //  PLAYLISTS — DATOS (localStorage)
 // ══════════════════════════════════════════════
 
+const MAX_PLAYLISTS = 12;
+const DEFAULT_LISTS_SEED = 'cantoral_evangelium_lists_v1';
+
+// Listas del retiro según LETRAS!!.pptx (págs 1–3). Se resuelven por título → índice.
+const DEFAULT_LISTS = [
+  {
+    name: "Inicio",
+    titles: ["A ti te alabo", "Tú el único Rey"]
+  },
+  {
+    name: "Espíritu Santo",
+    titles: [
+      "Viento fresco",
+      "Ven Espíritu de Dios",
+      "Inúndame",
+      "El Espíritu de Dios está en este lugar"
+    ]
+  },
+  {
+    name: "Expo. del Santísimo",
+    titles: ["En espíritu y verdad / Tú eres la luz", "Digno de Alabar"]
+  },
+  {
+    name: "Perdón",
+    titles: ["Me sostendrá", "Y te caes"]
+  },
+  {
+    name: "Sábado (Adoración)",
+    titles: [
+      "Dame",
+      "Me sostendrá",
+      "Si conocieras",
+      "Jesús eucaristía",
+      "Nada",
+      "Tú estás aquí",
+      "Noche",
+      "Trueno",
+      "Hasta la locura",
+      "El alfarero",
+      "La sombra de tus alas",
+      "Nadie te ama como yo",
+      "Huracán",
+      "Babel",
+      "Un segundo",
+      "Encontré",
+      "Otra vez",
+      "Te deseo",
+      "Inagotable",
+      "Llévame a la cruz",
+      "Tú eres todo",
+      "Salmo 23",
+      "La fe",
+      "Vasijas Rotas",
+      "La niña de tus ojos",
+      "Me rindo",
+      "Jesucristo Basta",
+      "Océanos",
+      "Dime Padre",
+      "Y te caes",
+      "Abres camino",
+      "Hazme nuevo Señor",
+      "La bondad de Dios",
+      "Eres Rey",
+      "Santo por siempre"
+    ]
+  },
+  {
+    name: "Alabanza (Domingo)",
+    titles: [
+      "Ven Espíritu de Dios",
+      "Yeshua",
+      "Tumbas a Jardines",
+      "Abres camino",
+      "La bendición",
+      "Recibe toda la gloria",
+      "Como en el cielo",
+      "Hay poder",
+      "Como no voy a creer",
+      "Lo único que quiero",
+      "No hay lugar más alto"
+    ]
+  },
+  {
+    name: "Misa",
+    titles: [
+      "Venimos hoy",
+      "Señor ten piedad",
+      "Gloria",
+      "Aleluya",
+      "Recibe oh Señor",
+      "Cordero",
+      "Jesús eucaristía",
+      "Bendita eucaristía",
+      "Nadie te ama como yo",
+      "Junto a ti María",
+      "Oigo tu voz",
+      "Viva Cristo Rey"
+    ]
+  }
+];
+
+function normSongTitle(t) {
+  return String(t).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function findSongIndexByTitle(title) {
+  const n = normSongTitle(title);
+  let idx = SONGS.findIndex(s => normSongTitle(s.title) === n);
+  if (idx >= 0) return idx;
+  // Coincidencia parcial (p.ej. títulos largos compuestos)
+  idx = SONGS.findIndex(s => {
+    const st = normSongTitle(s.title);
+    return st.includes(n) || n.includes(st);
+  });
+  return idx;
+}
+
+function buildDefaultPlaylists() {
+  return DEFAULT_LISTS.map(list => {
+    const songs = [];
+    const missing = [];
+    list.titles.forEach(title => {
+      const idx = findSongIndexByTitle(title);
+      if (idx >= 0) songs.push(idx);
+      else missing.push(title);
+    });
+    if (missing.length) {
+      console.warn('[Evangelium listas] No encontrados en', list.name + ':', missing.join(', '));
+    }
+    return { name: list.name, songs };
+  });
+}
+
+/** Crea/actualiza las 7 listas del PPT; conserva listas personalizadas con otro nombre. */
+function ensureDefaultPlaylists() {
+  const defaults = buildDefaultPlaylists();
+  const defaultNames = new Set(defaults.map(p => p.name));
+  const existing = loadPlaylists();
+  const custom = existing.filter(p => !defaultNames.has(p.name));
+  savePlaylists([...defaults, ...custom].slice(0, MAX_PLAYLISTS));
+  localStorage.setItem(DEFAULT_LISTS_SEED, '1');
+}
+
 function loadPlaylists() {
   try { return JSON.parse(localStorage.getItem('cantoral_playlists') || '[]'); }
   catch { return []; }
@@ -1578,12 +1725,12 @@ function renderPlaylistPanel() {
 
   // Restaurar toolbar siempre (limpia el input si estaba abierto)
   const toolbar = document.querySelector('.pl-toolbar');
-  const atLimit = pls.length >= 8;
+  const atLimit = pls.length >= MAX_PLAYLISTS;
   toolbar.innerHTML = atLimit
     ? `<button class="pl-new-btn" disabled
           style="opacity:0.45;cursor:not-allowed;border-style:solid;"
           title="Elimina una lista para poder crear otra">
-         Límite de 8 listas alcanzado
+         Límite de ${MAX_PLAYLISTS} listas alcanzado
        </button>`
     : `<button class="pl-new-btn" onclick="createPlaylist()">＋ Nueva lista</button>`;
 
@@ -2346,7 +2493,7 @@ Confío en tu corazón
  G                             D/F#
 Toma las piezas de mi corazón
    Em                          D     C     D
-que puede ser una ofrenda de adoración  x4
+Que puedan ser una ofrenda de adoración  x4
 
 [Coro]
    Em                C
@@ -2579,7 +2726,7 @@ Que da la vida`
   capo: "Capo 1 (suena en Ab)",
   content: `[Verso]
             G           D        Em        C
-Vengo ante ti con mi dolor sin fuerza sin voz
+Vengo ante ti con mi dolor sin fuerzas sin voz
           G           D          Em    C
 Y te veo ahí y solo quiero entregarte todo lo que tengo en mí
 
@@ -2591,7 +2738,9 @@ Quiero lavar tus pies con mi llanto con mi llanto
 
 [Coro]
      G       D        Em       C
-Me rindo me rindo me rindo me rindo a ti Sr.`
+Me rindo me rindo me rindo me rindo a ti, Señor
+     G       D        Em       C
+Me rindo me rindo me rindo me rindo a ti, Señor`
 },
 
 // ─────────────────────────────────────────────
@@ -2848,7 +2997,7 @@ Con toda el alma`
 // ─────────────────────────────────────────────
 {
   title: "Abres camino",
-  artist: "Rojo, Joel Contreras",
+  artist: "Marcela Gándara",
   key: "Eb",
   capo: "",
   content: `[Intro]
@@ -2866,6 +3015,8 @@ Te adoraré, te adoraré
 
 [Coro]
 Eb
+Te llamamos
+Eb
 Milagroso, abres camino
 Bb
 Cumples promesas
@@ -2874,6 +3025,16 @@ Luz en tinieblas
                  Gm
 Mi Dios, así eres Tú
 
+Eb
+Milagroso, abres camino
+Bb
+Cumples promesas
+               F
+Luz en tinieblas
+                 Gm
+Mi Dios, así eres Tú
+
+[Verso]
       Eb                 Bb
 Aquí estás sanando mi corazón
        F           Gm
@@ -2881,7 +3042,19 @@ Te adoraré, te adoraré
       Eb                 Bb
 Aquí estás tocando mi corazón
        F           Gm
-Te adoraré, te adoraré.
+Te adoraré, te adoraré
+
+[Coro]
+Eb
+Te llamamos
+Eb
+Milagroso, abres camino
+Bb
+Cumples promesas
+               F
+Luz en tinieblas
+                 Gm
+Mi Dios, así eres Tú
 
 [Puente]
  Eb
@@ -3481,7 +3654,7 @@ La gloria sea a Él`
 // ─────────────────────────────────────────────
 {
   title: "La sombra de tus alas",
-  artist: "Un Corazón ft. Living",
+  artist: "Un Corazón",
   key: "C",
   capo: "",
   content: `[Intro]
@@ -3489,11 +3662,15 @@ C  Em  F  C
 
 [Verso 1]
 C                                  Em
-Como la aurora tu ser, se ha convertido en mi amanecer
+Como la aurora a tu ser
+F                      C
+Se ha convertido en mi amanecer
                F         C
 Si tú estás en mí... hay vida
 C                                   Em
-Aunque no te pueda ver, tú estás conmigo no temeré
+Aunque no te pueda ver
+F                            C
+Tú estás conmigo, no temeré
           F        C  G
 Tu dulce voz... me guía
 
@@ -3501,19 +3678,23 @@ Tu dulce voz... me guía
      F     C                      G
 Confiaré... mi esperanza en ti pondré
      F        C               G
-Te veré... venir como el amanecer
+Te veré... en mí como el amanecer
         F       G    Am
-En mí harás, tu voluntad
+Enviarás tu voluntad
       F                  G                C
 En la sombra de tus alas siempre quiero estar
 
 [Verso 2]
 C                                    Em
-La noche acabará, lámpara es a mis pies tu verdad
+La noche acabará
+F                         C
+Lámpara es a mis pies tu verdad
          F           C
 Me levantarás... de nuevo
 C                                 Em
-Puestos los ojos en ti, es esa la forma en que quiero vivir
+Puestos los ojos en ti
+F                              C
+Es esa la forma en que quiero vivir
           F                   G
 Dejando atrás... la duda y el miedo
 
@@ -3521,19 +3702,19 @@ Dejando atrás... la duda y el miedo
      F     C                      G
 Confiaré... mi esperanza en ti pondré
      F        C               G
-Te veré... venir como el amanecer
+Te veré... en mí como el amanecer
         F       G    Am
-En mí harás, tu voluntad
+Enviarás tu voluntad
       F                  G                C
 En la sombra de tus alas siempre quiero estar
 
 [Puente]
    G    Am     F           C           G
-Descansaré, confío en Jesús, no hay otro nombre
+Descansaré, mi buen Jesús, no hay otro nombre
            Am  F              C        G
-Él es el autor de nuestra fe, Hijo del Hombre
+Eres el autor de nuestra fe, Hijo de hombre
        Am     F                     G        C
-No temeré, en la sombra de sus alas permaneceré
+No temeré, en la sombra de tus alas permaneceré
 
 [Final]
       F         G    Am    G
@@ -3549,81 +3730,118 @@ Está escrito... has venci - do`
 // ─────────────────────────────────────────────
 {
   title: "Tú eres todo",
-  artist: "Steven & Lluvia",
+  artist: "Un Corazón",
   key: "Bb",
   capo: "Cejilla 1",
   content: `[Verso 1]
 Bb                         Eb            Bb
-Creador sin igual, se hizo mortal,
+Creador sin igual, Él se hizo mortal
                                 F
-en la cruz él nos dio libertad,
+En la cruz Él nos dio libertad
       Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
+Y todo lo que yo soy cantará la canción
       Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!».
+¡Toda gloria a Cristo Jesús!
 
 [Verso 2]
 Bb                             Eb            Bb
-Un día él me encontró y me dio salvación,
+Un día Él me encontró y me dio salvación
                            F
-y limpió mi rebelde interior,
+Y limpio mi rebelde interior
       Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
+Todo lo que yo soy cantará la canción
       Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!».
+¡Toda gloria a Cristo Jesús!
 
 [Coro]
 Bb             Gm
-Tú eres todo, Dios con nosotros,
+Tú eres todo, Dios con nosotros
 Cm       Gm       Eb        F
-Rey sin igual, no hay más palabras.
+Rey sin igual, no hay más palabras
 
 [Verso 3]
 Bb                             Eb            Bb
-Si me encuentra la paz o una gran tempestad,
+Si me encuentra la paz, o una gran tempestad
                     F
-esta voz nunca voy a callar,
+Esta voz nunca voy a callar
       Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
+Todo lo que yo soy cantará la canción
       Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!».
+¡Toda gloria a Cristo Jesús!
 
 [Verso 4]
 Bb                             Eb            Bb
-Y yo sé que vas a volver a este mundo envolver
+Y yo sé que vas a volver, a este mundo envolver
                           F
-con el fuego y la luz de tu ser,
+Con el fuego y la luz de tu ser
       Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
+Y todo lo que yo soy cantará la canción
       Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!»
+¡Toda gloria a Cristo Jesús!
       Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!»
+¡Toda gloria a Cristo Jesús!
 
-[Coro x2]
+[Coro]
 Bb             Gm
-Tú eres todo, Dios con nosotros,
+Tú eres todo, Dios con nosotros
 Cm       Gm       Eb        F
-Rey sin igual, no hay más palabras.
+Rey sin igual, no hay más palabras
+Bb             Gm
+Tú eres todo, Dios con nosotros
+Cm       Gm       Eb        F
+Rey sin igual, no hay más palabras
 
 [Verso 5]
 Bb                                   Eb            Bb
-Cuando esté frente al sol junto al gran resplandor
+Cuando esté frente al sol, junto al gran resplandor
                     F
-del eterno y glorioso Señor,
+Del eterno y glorioso Señor
       Gm                   Eb            Bb
-y todo lo que yo soy cantará la canción:
+Todo lo que yo soy cantará la canción
       Eb        F         Bb
-«¡Toda gloria a Cristo Jesús!».
+¡Toda gloria a Cristo Jesús!
+
+[Coro]
+Bb             Gm
+Tú eres todo, Dios con nosotros
+Cm       Gm       Eb        F
+Rey sin igual, no hay más palabras
+Bb             Gm
+Tú eres todo, Dios con nosotros
+Cm       Gm       Eb        F
+Rey sin igual, no hay más palabras
+
+[Jesús salva]
+Eb                Bb
+¿Y muerte dónde está tu aguijón?
+         F            Gm
+Si en Jesús hay salvación
+        Eb         Bb
+En ese día Él compró
+         F
+Mi corazón
+        Eb            Bb
+Y es el amor del Salvador
+              F           Gm
+Gracia del Padre en esplendor
+          Eb        Bb
+Por su Espíritu de luz
+          F         Bb
+Hoy levantamos a Jesús
 
 [Puente]
-Bb - Gm - Cm Gm - Eb F
-
-[Coro x2]
-Bb             Gm
-Tú eres todo, Dios con nosotros,
-Cm       Gm       Eb        F
-Rey sin igual, no hay más palabras.`
+Bb
+Jesús salva, Jesús salva
+F
+Este es nuestro Dios glorioso
+Gm
+Jesús salva, Jesús salva
+Eb
+Este es nuestro Dios glorioso
+Bb
+Jesús salva, Jesús salva
+F                 Eb
+Este es nuestro Dios glorioso`
 },
 
 // ─────────────────────────────────────────────
@@ -3802,51 +4020,87 @@ G`
 // ─────────────────────────────────────────────
 {
   title: "Yeshua",
-  artist: "Misael Valera",
+  artist: "Marcos Brunet & Lid Galmes",
   key: "D",
   capo: "",
-  content: `[Intro]
-D  A  Bm  G
+  content: `[Verso]
+            D                 E
+Mi orgullo me sacó del jardín
+        F#m                   E
+Tu humildad colocó el jardín en mí
+        D                        E
+Si yo vendiese lo que tengo
+                         F#m          E
+A cambio de tu amor, yo fallaría
+
+[Pre-Coro]
+           D
+Pues tu amor no se compra
+ E
+Ni se merece
+   F#m
+Tu amor no se gana
+      E
+De gracia se recibe
 
 [Coro]
-D                  A
-Yeshua, Yeshua, Yeshua
-Bm                 G
-Nombre sobre todo nombre
-D                  A
-Yeshua, Yeshua, Yeshua
-Bm                 G
-Rey de reyes y Señor
+     D                E
+Yo quiero conocerte Jesús
+    F#m               E
+Yo quiero conocerte Jesús
+     D                E
+Ser hallado en Él
 
-[Verso 1]
-D                A
-En tu nombre hay salvación
-Bm               G
-Toda rodilla se doblará
-D                A
-En tu nombre hay sanación
-Bm               G
-Toda lengua confesará
+[Verso]
+            D                 E
+Mi orgullo me sacó del jardín
+        F#m                   E
+Tu humildad colocó el jardín en mí
+        D                        E
+Si yo vendiese lo que tengo
+                         F#m          E
+A cambio de tu amor, yo fallaría
 
-[Verso 2]
-D                    A
-Jesús, tú eres el camino
-Bm                   G
-La verdad y la vida eres tú
-D                    A
-En ti tengo yo el destino
-Bm                   G
-Mi vida entrego solo a ti
+[Pre-Coro]
+           D
+Pues tu amor no se compra
+ E
+Ni se merece
+   F#m
+Tu amor no se gana
+      E
+De gracia se recibe
+
+[Coro]
+     D                E
+Yo quiero conocerte Jesús
+    F#m               E
+Yo quiero conocerte Jesús
+     D                E
+Yo quiero conocerte Jesús
+    F#m               E
+Yo quiero conocerte Jesús
+                    D  E  F#m  E
+Y ser hallado en Él
 
 [Puente]
-G                  A
-Tú eres digno de toda gloria
-G                  A
-Tú eres digno de todo honor
-G                  A
-Tú eres digno, oh Señor Jesús
-Bm          A          G
-Yeshua, Yeshua, Yeshua`
+D     E     F#m    E
+Yeshua, Yeshua, Yeshua, Yeshua
+
+[Puente 2]
+       D               A
+Mi amado es el más bello
+        F#m                E
+Entre millares y millares
+
+           D
+Jesús mi preferido, mi predilecto
+E                           F#m       E
+Mi preferido, mi predilecto es Jesús, Jesús
+
+[Final]
+D     E     F#m    E
+Yeshua, Yeshua, Yeshua, Yeshua`
 },
 
 // ─────────────────────────────────────────────
@@ -3940,7 +4194,7 @@ Levanto mis manos
         F#m
 Cierro mis ojos
                  D                  E
-Para proclamar tu nombre, Dios de amor
+Para proclamar tu nombre, Dios de poder
 
 [Coro]
        D        E
@@ -3964,7 +4218,7 @@ Abro mis labios
         F#m
 Cierro mis ojos
               D                  E
-Para cantar tu nombre, Dios de amor
+Para cantar tu nombre, Dios de poder
 
 [Coro]
        D        E
@@ -5438,11 +5692,1456 @@ C             G
 a Ti, a Ti para siempre. (x2)`
 },
 
+
+// ─────────────────────────────────────────────
+//  NUEVOS CANTOS — Evangelium (lista LETRAS!!.pptx págs 1–3)
+// ─────────────────────────────────────────────
+{
+  title: "Ven Espíritu de Dios",
+  artist: "Vale Montes",
+  key: "Em",
+  capo: "Capo 1 (suena en Fm)",
+  content: `[Intro]
+Em  C  G  D
+
+[Verso 1]
+Em                C
+Hoy más que nunca anhelo
+G                 D
+Tu presencia, Consolador
+Em              C
+Ven a iluminarme
+G                      D
+Y llévate las dudas y el temor
+
+[Coro]
+Em              C
+Que se abran los cielos
+G               D
+Y derrames tu fuego
+Em              C
+Ven Espíritu de Dios
+G               D
+Ven Espíritu de Dios
+
+[Verso 2]
+Em              C
+Quémame por dentro
+G               D
+Con tu fuego abrazador
+Em              C
+Toma mis cenizas
+G                      D
+Y crea en mí un nuevo corazón
+
+[Coro]
+Em              C
+Que se abran los cielos
+G               D
+Y derrames tu fuego
+Em              C
+Ven Espíritu de Dios
+G               D
+Ven Espíritu de Dios
+
+[Puente]
+Em              C              G  D
+Abre los cielos, derrama tu fuego
+Em              C              G  D
+Abre los cielos, derrama tu fuego
+Em              C              G  D
+Abre los cielos, derrama tu fuego
+Em              C              G  D
+Abre los cielos, derrama tu fuego
+
+[Coro]
+Em              C
+Que se abran los cielos
+G               D
+Y derrames tu fuego
+Em              C
+Ven Espíritu de Dios
+G               D
+Ven Espíritu de Dios
+
+[Puente 2]
+Em              C
+Ven Paráclito Divino
+G               D
+Ven y muéstrame el camino
+Em              C
+Ven Espíritu de Dios
+G               D
+Ven Espíritu de Dios
+
+Em              C
+Ven Paráclito Divino
+G               D
+Traigo un corazón contrito
+Em              C
+Ven Espíritu de Dios
+G               D
+Ven Espíritu de Dios
+
+Em              C
+Ven Paráclito Divino
+G               D
+Es el grito de tus hijos
+Em              C
+Ven Espíritu de Dios
+G               D
+Ven Espíritu de Dios
+
+[Coro]
+Em              C
+Que se abran los cielos
+G               D
+Y derrames tu fuego
+Em              C
+Ven Espíritu de Dios
+G               D
+Ven Espíritu de Dios`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Inúndame",
+  artist: "Athenas",
+  key: "G",
+  capo: "",
+  content: `[Intro]
+G  D
+
+[Verso]
+G                      D
+Entra, te abro mi corazón
+G                D
+Lléname con tu amor
+
+[Coro]
+  G         D
+Inúndame, satúrame
+ G                    D
+Ven, Espíritu Santo, ven
+ G                    D
+Ven, Espíritu Santo, ven
+
+[Verso]
+G                      D
+Entra, te abro mi corazón
+G                D
+Lléname con tu amor
+
+[Coro]
+  G         D
+Inúndame, satúrame
+ G                    D
+Ven, Espíritu Santo, ven
+ G                    D
+Ven, Espíritu Santo, ven`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "El Espíritu de Dios está en este lugar",
+  artist: "Clásico",
+  key: "D",
+  capo: "",
+  content: `[Coro]
+     D                G           D
+El Espíritu de Dios está en este lugar
+                      G              A
+El Espíritu de Dios se mueve en este lugar
+      D             G
+Está aquí para consolar
+      D            G
+Está aquí para liberar
+      D
+Está aquí para guiar
+     A                   D
+El Espíritu de Dios está aquí
+
+[Puente]
+D7         G   A      D       D7
+Muévete en mí,   muévete en mí
+         G             A
+Toca mi mente y mi corazón
+          F#m        Bm
+Llena mi vida de tu amor
+            G         A                 D
+Muévete en mí, Dios Espíritu, muévete en mí`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Y te caes",
+  artist: "Hakuna",
+  key: "C#m",
+  capo: "Capo 4 (formas Am)",
+  content: `[Verso 1]
+             C#m            B
+Me vuelvo a caer, me invade el fracaso
+         A            B          C#m
+Y no encuentro una razón para seguir
+                  C#m                    B
+Pero eres tan cercano que vienes a mi encuentro
+        A            B         C#m
+Porque sabes que yo solo no podré
+
+[Coro]
+      A  B          C#m
+Y te caes para levantarme
+   A              B          C#m
+Y limpias mis heridas con tu sangre
+
+[Verso 2]
+              C#m               B
+Vuelvo a tropezar con la misma piedra
+       A            B         C#m
+Y me cuesta hasta pedirte perdón
+             C#m                  B
+Me dices al oído que tú no me desprecias
+        A            B              C#m
+Que tu amor no sabe lo que es el rencor
+
+[Coro]
+      A  B          C#m
+Y te caes para levantarme
+   A              B          C#m
+Y limpias mis heridas con tu sangre
+      A  B          C#m
+Y me miras para alentarme
+       A             B                 C#m
+Sin palabras me das fuerzas para continuar
+
+[Puente]
+      A                       B
+Yo solía pensar que eras un Dios indiferente
+     A                               B
+Pero no, hoy me doy cuenta de mi error
+   C#m                  B
+Solía pensar que para ti yo era un extraño
+         A                              B
+Y ahora sé, siempre has estado junto a mí
+            C#m               B
+Yo solo no puedo, yo solo no puedo
+            A          B       C#m
+Yo solo no puedo, ven Señor a rescatarme
+            C#m               B
+Yo solo no puedo, yo solo no puedo
+            A          B       C#m
+Yo solo no puedo, ven Señor a rescatarme
+
+[Coro]
+      A  B          C#m
+Y te caes para levantarme
+   A              B          C#m
+Y limpias mis heridas con tu sangre
+      A  B          C#m
+Y me miras para alentarme
+       A             B                 C#m
+Sin palabras me das fuerzas para continuar`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Si conocieras",
+  artist: "Hermana Glenda",
+  key: "C",
+  capo: "",
+  content: `[Verso 1]
+        C                          Em
+Si conocieras como te amo, si conocieras como te amo
+     F                  G
+Dejarías de vivir sin amor
+        C                          Em
+Si conocieras como te amo, si conocieras como te amo
+    F                            G
+Dejarías de mendigar cualquier amor
+        Am            Em           F
+Si conocieras como te amo, como te amo
+   G         C
+Serías más feliz
+
+[Verso 2]
+        C                            Em
+Si conocieras como te busco, si conocieras como te busco
+     F                        G
+Dejarías que te alcanzara mi voz
+        C                            Em
+Si conocieras como te busco, si conocieras como te busco
+     F                        G
+Dejarías que te alcanzara mi voz
+        Am             Em           F
+Si conocieras como te busco, como te busco
+        G           C
+Escucharías más mi voz
+
+[Verso 3]
+        C                           Em
+Si conocieras como te sueño, si conocieras como te sueño
+       F                          G
+Me preguntarías lo que espero de ti
+        C                           Em
+Si conocieras como te sueño, si conocieras como te sueño
+       F                          G
+Me preguntarías lo que espero de ti
+         Am            Em           F
+Si conocieras como te sueño, como te sueño
+          G                 C
+Pensarías más en mí`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Jesús eucaristía",
+  artist: "Mayra Alejandra Barajas",
+  key: "G",
+  capo: "Capo 3 (suena en Bb)",
+  content: `[Verso 1]
+G                                C
+Aunque pase por las turbias aguas
+G                                 C
+Y me sienta débil o en soledad
+Em         D                C
+A tu lado yo tengo confianza
+Em            D              C
+Tu firmeza me acompañará
+
+[Coro]
+G              C                    G  D
+Yo creo en ti, Jesús Eucaristía
+G              C                        G  D
+La inmensidad presente en el altar
+G               C                            Em  D
+Tu amor por mí me vuelve a la alegría
+     C                     Am           D        G
+De mano de María, aquí estoy para adorar
+
+[Verso 2]
+              Em       D       C
+No hace falta que diga palabras
+G                         D
+Conoces mis pensamientos
+       Em        D         C
+Ante ti se desnuda mi alma
+ G                      D
+Me rindo a ti Dios eterno
+
+[Coro]
+G              C                    G  D
+Yo creo en ti, Jesús Eucaristía
+G              C                        G  D
+La inmensidad presente en el altar
+G               C                            Em  D
+Tu amor por mí me vuelve a la alegría
+     C                     Am           D        G
+De mano de María, aquí estoy para adorar
+
+[Final]
+ Em        D       C
+Vengo a ti para adorar
+Em            D      G
+Aquí estoy para adorar`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Tú estás aquí",
+  artist: "Jesús Adrián Romero",
+  key: "E",
+  capo: "",
+  content: `[Intro]
+E  C#m  A  B
+
+[Verso 1]
+            E
+Aunque mis ojos
+             C#m               A
+No te puedan ver, te puedo sentir
+               E    B
+Sé que estás aquí
+
+           E
+Aunque mis manos
+            C#m               A
+No puedan tocar tu rostro Señor
+                E   B
+Sé que estás aquí
+
+[Coro]
+      C#m            A
+Mi corazón puede sentir tu presencia
+ E              B
+Tú estás aquí, Tú estás aquí
+C#m         A
+Puedo sentir tu majestad
+ E              B
+Tú estás aquí, Tú estás aquí
+
+      C#m            A
+Mi corazón puede mirar tu hermosura
+ E            B
+Tú estás aquí, Tú estás aquí
+C#m         A
+Puedo sentir tu gran amor
+ E            B
+Tú estás aquí, Tú estás aquí`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Hasta la locura",
+  artist: "Pablo Martínez",
+  key: "G",
+  capo: "",
+  content: `[Intro]
+G  C  G  C
+
+[Verso 1]
+G                         C
+Me puede faltar todo en la vida
+D                         G
+Me puede faltar hasta la vida
+Bm                        Em
+Pero nunca quiero que me falte
+            C       D        G
+El deseo de amarte hasta el final
+
+[Coro]
+            C              D
+Hasta la locura te amo, Señor
+               G      D      Em
+Ya no quedan dudas en mi corazón
+          C              D    G
+De que te amo, de que te amo, Señor
+
+[Verso 2]
+G                         C
+Quiero amarte hasta el extremo
+D                         G
+Sin reservas darme por entero
+Bm                        Em
+Como los que se han enamorado
+         C         D          G
+Yo te canto, mi amado, hasta el final
+
+[Coro]
+            C              D
+Hasta la locura te amo, Señor
+               G      D      Em
+Ya no quedan dudas en mi corazón
+          C              D    G
+De que te amo, de que te amo, Señor`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "El alfarero",
+  artist: "Evan Craft",
+  key: "C#m",
+  capo: "Capo 4 (formas Am)",
+  content: `[Intro]
+C#m  A  E  B
+
+[Verso 1]
+  C#m              A
+Antes de la creación
+  E               B
+Y el caos del universo
+  C#m              A
+Existía en tu corazón
+   E               B
+Antes que naciera el sol
+
+   C#m              A
+Formaste del polvo mi vida
+    E               B
+Mi alma por ti fue elegida
+  C#m              A
+Vengo con manos vacías
+    E              B
+Más yo quiero ser tu vasija
+
+[Coro]
+  E          C#m
+Y yo... barro soy
+           A
+En el torno estoy
+    F#m
+Moldeame hoy
+    E             B
+Rómpeme si es necesario
+
+  E            C#m
+Y yo... tu vaso soy
+               A
+Una nueva creación
+       F#m
+Soy obra de Dios
+   E             B
+En manos del alfarero
+
+[Verso 2]
+     C#m                 A
+Mis pedazos juntaste del suelo
+        E                 B
+Cuando nadie más quiso hacerlo
+      C#m               A
+Tomaste mi vida en tus manos
+       E                    B
+Me restauraste, me hiciste de nuevo
+
+    C#m             A
+Ahora yo tengo esperanza
+   E                 B
+No tengo temor del mañana
+    C#m             A
+En manos del gran alfarero
+     E                 B
+Seguro estoy en su amor eterno
+
+[Coro]
+  E          C#m
+Y yo... barro soy
+           A
+En el torno estoy
+    F#m
+Moldeame hoy
+    E             B
+Rómpeme si es necesario
+
+  E            C#m
+Y yo... tu vaso soy
+               A
+Una nueva creación
+       F#m
+Soy obra de Dios
+   E             B
+En manos del alfarero
+
+[Puente]
+F#m     C#m         E     B
+Hizo la luz en un momento
+F#m    C#m          B
+Pero en mí tomó su tiempo
+F#m        C#m          E     B
+Transforma todo lo que siento
+F#m      C#m            B
+Dame tu vida, sopla aliento
+
+[Coro]
+  E          C#m
+Y yo... barro soy
+           A
+En el torno estoy
+    F#m
+Moldeame hoy
+    E             B
+Rómpeme si es necesario
+
+  E            C#m
+Y yo... tu vaso soy
+               A
+Una nueva creación
+       F#m
+Soy obra de Dios
+   E             B
+En manos del alfarero
+       F#m
+Soy obra de Dios
+   E             B
+En manos del alfarero`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Nadie te ama como yo",
+  artist: "Martín Valverde",
+  key: "C",
+  capo: "",
+  content: `[Verso 1]
+C               Em        Am        G
+Cuánto he esperado este momento
+Dm       F        G
+Cuánto he esperado que estuvieras así
+C               Em         Am        G
+Cuánto he esperado que me hablaras
+Dm      F        G
+Cuánto he esperado que vinieras a mí
+
+[Verso 2]
+C               Em        Am        G
+Yo sé bien lo que has sufrido
+Dm       F        G
+Yo sé bien por qué has llorado
+C               Em         Am        G
+Yo sé bien lo que has vivido
+Dm      F        G
+Pues de tu lado no me he ido
+
+[Coro]
+                C  Em    Am  G
+Pues nadie te ama como yo
+                Dm F     G
+Pues nadie te ama como yo
+           C          Em          Am       G
+Mira la cruz, esa es mi más grande prueba
+Dm         F  G
+Nadie te ama como yo`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "La fe",
+  artist: "Un Corazón feat. Barak",
+  key: "C",
+  capo: "",
+  content: `[Coro]
+ C
+Creemos en ti
+ G
+Que tú estás aquí
+ Am
+Que tú eres bueno
+ F
+Siempre eres bueno
+ C              G
+Dios redentor, rey y señor
+ Am
+Tú eres bueno
+ F
+Siempre eres bueno
+
+[Estribillo]
+ F              G
+Por la fe mueves montañas
+ F              G
+Por la fe abres las aguas
+ C    G     Am
+Por la fe es que nuestros ojos lo verán
+ F              G
+Por la fe calmas tormentas
+ F              G
+Por la fe rompes cadenas
+ C    G     Am
+Por la fe es que nuestros ojos lo verán
+
+[Nota]
+También conocida como "Por la fe".`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "La niña de tus ojos",
+  artist: "Daniel Calveti",
+  key: "C",
+  capo: "",
+  content: `[Intro]
+C  G  Am  F
+
+[Verso]
+ C              G
+Me viste a mí cuando nadie me vio
+ Am             F
+Me amaste a mí cuando nadie me amó
+
+ C                 G
+Y me diste nombre, yo soy tu niña
+ Am                      F
+La niña de tus ojos porque me amaste a mí
+
+[Coro]
+ C                         G
+Te amo más que a mi vida, te amo más que a mi vida
+ Am                        F
+Te amo más que a mi vida más
+
+ C                         G
+Te amo más que a mi vida, te amo más que a mi vida
+ Am                        F
+Te amo más que a mi vida más`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Océanos",
+  artist: "Hillsong United",
+  key: "Bm",
+  capo: "",
+  content: `[Intro]
+Bm  A  D  A  G
+
+[Verso 1]
+ Bm             A       D
+Tu voz me llama a las aguas
+        A                G
+Donde mis pies pueden fallar
+ Bm                 A      D
+Y allí te encuentro en lo incierto
+       A         G
+Caminaré sobre el mar
+
+[Pre-Coro]
+G      D       A
+A tu nombre clamaré
+G      D          A
+En ti mis ojos fijaré
+       G
+En tempestad
+     D             A
+Descansaré en tu poder
+           G              Bm
+Pues tuyo soy hasta el final
+
+[Verso 2]
+ Bm             A       D
+Tu gracia abunda en la tormenta
+       A            G
+Tu mano, Dios, me guiará
+Bm               A       D
+Cuando hay temor en mi camino
+          A           G
+Tú eres fiel y no cambiarás
+
+[Pre-Coro]
+G      D       A
+A tu nombre clamaré
+G      D          A
+En ti mis ojos fijaré
+       G
+En tempestad
+     D             A
+Descansaré en tu poder
+           G              Bm
+Pues tuyo soy hasta el final
+
+[Puente]
+Bm                     G
+Que tu Espíritu me guíe sin fronteras
+       D                    A
+Más allá de las barreras, a donde tú me llames
+Bm                   G
+Tú me llevas más allá de lo soñado
+        D                     A
+Donde puedo estar confiado al estar en tu presencia
+
+Bm                     G
+Que tu Espíritu me guíe sin fronteras
+       D                    A
+Más allá de las barreras, a donde tú me llames
+Bm                   G
+Tú me llevas más allá de lo soñado
+        D                     A
+Donde puedo estar confiado al estar en tu presencia
+
+[Pre-Coro]
+G      D       A
+A tu nombre clamaré
+G      D          A
+En ti mis ojos fijaré
+       G
+En tempestad
+     D             A
+Descansaré en tu poder
+           G              Bm
+Pues tuyo soy hasta el final`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Hazme nuevo Señor",
+  artist: "Soluciones Collective",
+  key: "E",
+  capo: "",
+  content: `[Coro]
+F#m7    E    B         A
+Cámbiame y hazme nuevo
+        F#m7         E    B
+Tú conoces mi necesidad
+F#m7  E         B   A
+Como barro al alfarero
+A                   B      E
+Sé que me restaurarás
+
+[Verso]
+A                        E                B
+Sálvame, Señor, y seré salvo de verdad
+A                        E                B
+Sáname, Señor, y seré sano de verdad
+A                        E      B     C#m7
+Úsame, Señor, para hacer tu voluntad
+F#m7     B            E
+Jesús, te quiero adorar
+
+[Nota]
+Si es otra melodía del retiro, avísame para ajustar.`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "La bondad de Dios",
+  artist: "Bethel Music",
+  key: "G",
+  capo: "Capo 1 (suena en Ab)",
+  content: `[Verso]
+         G
+Te amo Dios
+       C            G
+Tu bondad nunca me falla
+   D/F#  Em7         C       D
+Y mis días, en tus manos están
+                          Em7  C
+Desde el momento que despierto
+           G    D/F#  Em7
+Hasta el anochecer
+         C        D          G
+Yo cantaré de la bondad de Dios
+
+[Coro]
+C                         G
+En mi vida has sido bueno
+C                        G     D
+En mi vida has sido fiel Señor
+C                          G  D/F#  Em7
+Con cada aliento de mi ser
+         C        D          G
+Yo cantaré de la bondad de Dios
+
+[Puente]
+G/B               C
+Tu bondad corre detrás
+    D            G
+Corre detrás de mí
+      G/B              C
+Mi vida te doy, yo me rindo a ti
+    D           Em7
+Te doy todo de mí`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Eres Rey",
+  artist: "Barak",
+  key: "C#m",
+  capo: "",
+  content: `[Intro]
+C#m  A  E  B
+
+[Verso]
+C#m                      A
+Oh perfecto inigualable Dios
+                E                 B
+Amor inexplicable, tu reino inigualable
+C#m                   A
+Asombroso coronado estás
+                   E                    B
+En tu trono de victoria, vestido estás de gloria
+
+[Pre-Coro]
+        C#m                          A
+Por los siglos de los siglos, tu reino se establecerá
+           E                              B
+Digno de gloria, digno de honor, digno de toda adoración
+
+[Coro]
+      C#m            A            E            B
+Tú eres Rey, tú eres Rey, tú eres Rey
+
+[Puente]
+C#m                        A
+Hoy perfumamos tu trono
+E                          B
+Recibe alabanza`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Santo por siempre",
+  artist: "ECCOS",
+  key: "A",
+  capo: "Capo 2 (suena en B)",
+  content: `[Intro]
+D  Dmaj7  E  A  C#m7  F#m  A
+
+[Verso 1]
+A
+Mil generaciones
+    D
+Se postran a adorarle
+   F#m          E           D
+Le cantan al Cordero que venció
+     A
+Los que nos precedieron
+  D/F#               A
+Y los que en Él creerán
+   F#m          E             D
+Le cantarán a aquel que ya venció
+
+[Pre-Coro]
+    D/F#
+Tu nombre es más alto
+    E
+Tu nombre es más grande
+   F#m          E   D/F#
+Tu nombre, sobre todo, es
+    D/F#
+Dominios y tronos
+   E
+Poderes y reinos
+   F#m          E   Bm
+Tu nombre, sobre todo, es
+
+[Coro]
+            D   F#m   E
+Cantan ángeles, Santo
+              C#m     F#m
+Clama la creación, Santo
+         Bm       E
+Exaltado Dios, Santo
+            A
+Santo por siempre
+
+[Verso 2]
+A
+Y si te ha perdonado
+    D           A
+Y tienes salvación
+F#m            E         D
+Cántale al Cordero que venció
+A
+Si te ha libertado
+    D                  A
+Su nombre ha puesto en ti
+F#m            E          D
+Cántale al Cordero que venció
+F#m          E     Bm
+Cantaremos siempre, amén
+
+[Coro]
+            D   F#m   E
+Cantan ángeles, Santo
+              C#m     F#m
+Clama la creación, Santo
+         Bm       E
+Exaltado Dios, Santo
+            A
+Santo por siempre
+
+               D      E
+Tu gente cantará, Santo
+               C#m    F#m
+Rey de reyes es, Santo
+              Bm      E
+Tú siempre serás, Santo
+            A
+Santo por siempre
+
+[Final]
+             Bm      E
+Tú siempre serás, Santo
+            A
+Santo por siempre`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Recibe toda la gloria",
+  artist: "Marco Barrientos",
+  key: "Bm",
+  capo: "",
+  content: `[Verso]
+  Bm                  G
+Quiero levantar a ti mis manos
+   D
+Maravilloso Jesús
+   A
+Milagroso Señor
+  Bm                     G
+Llena este lugar de tu presencia
+       D                         A
+Haz descender tu poder a los que estamos aquí
+
+[Pre-Coro]
+         Bm   A   G
+Creo en ti Jesús
+ Bm           A   G
+Y lo que harás en mí
+    D        A
+En mí... en mí...
+
+[Coro]
+        Bm
+Recibe toda la gloria
+        G
+Recibe toda la honra
+    D             A
+Precioso Hijo de Dios`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Como en el cielo",
+  artist: "Elevation Worship",
+  key: "D",
+  capo: "",
+  content: `[Verso]
+G                     D      A
+La atmósfera cambiando está
+G                 D
+Tu Espíritu está aquí
+G               D     A
+Es evidente tu mover
+G                 D     A
+Tu Espíritu está aquí
+
+[Pre-Coro]
+G
+Llena este lugar
+                  Bm
+Derramando tu amor
+                A
+Tu amor me envuelve
+G
+He venido por ti
+                    Bm
+A tus brazos de amor
+                A
+Tu amor me envuelve
+
+[Coro]
+G                       A  Bm
+Que tu poder descienda hoy
+             A
+Venga tu reino
+G                          A  Bm
+Que se haga aquí tu voluntad
+                A
+Como en el cielo`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Como no voy a creer",
+  artist: "Bethel Music",
+  key: "C",
+  capo: "",
+  content: `[Intro]
+F  C  Am  G
+
+[Verso 1]
+       F                          C
+Soy testigo de tu gran fidelidad
+      Am                   G
+Vi milagros que no puedo explicar
+      F                              Am
+Hay belleza en lo que excede mi entender
+            C                G
+Cristo eres Tú, Cristo eres Tú
+
+[Coro]
+        F
+Creo en ti
+                 C
+Maravillas haces tú
+                 Am
+Maravillas haces tú
+                   G
+Tantas veces las viví
+                 F
+Como no creer en ti
+                 Am
+Maravillas haces tú
+                 C
+Y las haces por amor
+                   G
+Tu bondad yo puedo ver
+Como no voy a creer
+
+[Verso 2]
+       F                               C
+Con mis manos yo no puedo revivir
+      Am                        G
+Pero en tu nombre hay resurrección aquí
+      F                           Am
+Toda gloria al que tiene el poder
+            C                G
+Cristo eres Tú, Cristo eres Tú
+
+[Puente]
+F                         C
+Yo lo he visto sanar, y al muerto resucitar
+Am                        G
+No me digas que Él no puede
+F                         C
+Lo he visto restaurar el cuerpo y dar renovación mental
+Am                        G
+Pues yo sé que mi Dios puede`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Lo único que quiero",
+  artist: "Marco Barrientos",
+  key: "F#",
+  capo: "Sin capo · o Capo 2 formas E (A–E–C#m–B)",
+  content: `[Verso]
+      B                       F#               D#m          C#
+Anhelo conocerte más, vivir en santidad, en intimidad
+        B                               F#           D#m
+Contigo, siempre quiero estar, tu gloria contemplar
+               C#
+Por la eternidad
+
+[Coro]
+   F#/A#         B
+Lo único que quiero es adorarte
+                 F#
+Lo único que quiero es adorarte
+                    D#m                     C#
+Vengo a tus pies para entregar mi corazón
+     F#/A#         B
+Lo único que quiero es agradarte
+                 F#
+Lo único que quiero es agradarte
+        D#m                       C#
+Por siempre cantaré de tu amor
+
+[Puente]
+B
+Amor que me rescató
+F#
+Que me limpió
+D#m
+Que me da vida eterna
+         C#
+Tu sangre abrió el camino que nunca se cerrará
+B  F#  D#m  C#
+Tengo libertad`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "No hay lugar más alto",
+  artist: "Miel San Marcos",
+  key: "A",
+  capo: "",
+  content: `[Verso]
+     A           E
+A tus pies arde mi corazón
+     F#m                D
+A tus pies entrego lo que soy
+     A           E
+Ese lugar de mi seguridad
+     F#m            D
+Donde nadie me puede señalar
+
+[Pre-Coro]
+D                              E
+Me perdonaste, me acercaste a tu presencia
+        F#m                        E
+Me levantaste, hoy me postro a adorarte
+
+[Coro]
+         A        D           E
+No hay lugar más alto, más grande
+                F#m                   A
+Que estar a tus pies, que estar a tus pies
+
+    D           E        A   E    F#m
+Y aquí permaneceré, postrado a tus pies
+     D          E                 F#m
+Y aquí permaneceré a los pies de Cristo`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Venimos hoy",
+  artist: "Misa · Entrada",
+  key: "G",
+  capo: "",
+  content: `[Coro]
+ G                  Bm        C       D
+Venimos hoy a tu altar, a cantarte Señor
+      C              G      D           G
+Pues tú eres la alegría de nuestro corazón
+
+ G                  Bm        C       D
+Venimos hoy a tu altar, a cantarte Señor
+      C              G      D           G
+Pues tú eres la alegría de nuestro corazón
+
+[Verso]
+  G                 Em
+Tú hiciste los cielos
+                    C
+Los llenas de estrellas
+            D
+De luz y color
+ G                Em
+Tú pintaste la aurora
+               C
+Hiciste las nubes
+                D
+Las puestas de sol`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Señor ten piedad",
+  artist: "Misa · Perdón",
+  key: "Em",
+  capo: "",
+  content: `[Estrofa]
+Em          B7   Em
+Señor, ten piedad de nosotros
+B7               Em   E7
+Señor, ten piedad de nosotros
+Am    D7   G     Em
+De nosotros, Señor, ten piedad
+Am    B7   Em
+De nosotros, Señor, ten piedad
+
+G           B7   Em
+Cristo, ten piedad de nosotros
+B7               Em   E7
+Cristo, ten piedad de nosotros
+Am    D7   G     Em
+De nosotros, Señor, ten piedad
+Am    B7   Em
+De nosotros, Señor, ten piedad
+
+Em          B7   Em
+Señor, ten piedad de nosotros
+B7               Em   E7
+Señor, ten piedad de nosotros
+Am    D7   G     Em
+De nosotros, Señor, ten piedad
+Am    B7   Em
+De nosotros, Señor, ten piedad
+
+[Nota]
+Hay muchas melodías de Kyrie; ajusta si usan otra.`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Aleluya",
+  artist: "Misa · Aclamación",
+  key: "G",
+  capo: "",
+  content: `[Coro · Misa Panamericana]
+G    Em   Am   D
+Aleluya, Aleluya, Aleluya
+G    Em   Am   D   G
+Aleluya, Aleluya, A-le-lu-ya
+
+[Alternativa · Misa Festiva]
+Bm  Em  A  D
+Aleluya, Aleluya
+Bm  Em  F#  Bm
+Aleluya, A-leluya
+
+[Nota]
+Usa la melodía del retiro; hay muchas versiones.`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Recibe oh Señor",
+  artist: "Misa · Ofertorio",
+  key: "G",
+  capo: "",
+  content: `[Coro]
+G     D    Em
+Recibe oh Señor las ofrendas que hoy
+Bm    C    D
+Ponemos ante ti, gran Dios
+G     D    C     D
+Recibe oh Señor toda nuestra oración
+
+[Verso]
+G     D    Em
+Toma nuestros corazones
+Bm
+Que ofrecemos a ti
+C     D
+Transforma nuestra ofrenda
+C     D     G
+En el Cuerpo y Sangre de Jesús`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Cordero",
+  artist: "Misa · Cordero de Dios",
+  key: "Am",
+  capo: "",
+  content: `[Estrofa]
+Am     Dm
+Cordero de Dios que quitas
+F    G    Am
+El pecado del mundo
+Dm   G    C   F
+Ten piedad de nosotros
+Dm   E7   Am
+Ten piedad de nosotros
+
+Am     Dm
+Cordero de Dios que quitas
+F    G    Am
+El pecado del mundo
+Dm   G    C   F
+Ten piedad de nosotros
+Dm   E7   Am
+Ten piedad de nosotros
+
+Am     Dm
+Cordero de Dios que quitas
+F    G    Am
+El pecado del mundo
+F    Dm   G   C
+Danos la paz, danos la paz
+Dm  G  C  F  Dm  E7  Am
+Danos, danos, danos la paz`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Bendita eucaristía",
+  artist: "Música Católica",
+  key: "A",
+  capo: "",
+  content: `[Verso 1]
+A                 F#m
+A ti, el más inocente
+  D  Bm          E
+A ti el omnipotente
+A               C#m
+A ti mi rey y señor
+         E      Bm
+Mi Dios y salvador
+         E
+Te crucificaron
+
+[Verso 2]
+A                    F#m
+Tus manos y pies clavaron
+D Bm          E
+Y tú lo aceptabas
+A         C#m         D
+Mas no te bastó con morir
+Bm                    E
+Sino que te quedaste aquí
+
+[Coro]
+            D   E
+Bendita eucaristía
+          A
+Bendito Señor
+A7         D  E
+Adoro tu cuerpo
+                       A
+Que me entregaste por amor
+
+A7           D  E
+Bendita eucaristía
+         A
+Bendito Señor
+   A7              D  E
+Ya no soy yo quien vive
+E                     A
+Eres tú quien vive en mí`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Junto a ti María",
+  artist: "Kairoi",
+  key: "D",
+  capo: "",
+  content: `[Intro]
+D  A
+
+[Verso 1]
+D             A
+Junto a ti María
+     Bm             F#m
+Como niño quiero estar
+G              D
+Tómame en tus brazos
+    E             A
+Guíame en mi caminar
+
+D               A
+Quiero que me eduques
+         Bm       F#m
+Que me enseñes a orar
+G             D
+Hazme transparente
+     A      D
+Lléname de paz
+
+[Coro]
+D  A   Bm  F#m
+Madre, Madre
+G  D   E   A
+Madre, Madre
+
+[Verso 2]
+D              A
+Gracias Madre mía
+Bm               F#m
+Por llevarnos a Jesús
+G                D
+Haznos más humildes
+       E           A
+Tan sencillos como tú`
+},
+
+// ─────────────────────────────────────────────
+{
+  title: "Oigo tu voz",
+  artist: "Sergio Taméz",
+  key: "D",
+  capo: "",
+  content: `[Verso 1]
+D                    A          Bm
+Oigo tu voz dentro de mí que llama
+G                 Em              A
+¿A quién envío?, ¿quién de mi parte irá?
+D                    A          Bm
+La mies es mucha y los obreros son pocos
+G            Em        A
+Yo quiero ir, envíame a mí
+
+[Coro]
+           D                     A
+Que cada uno con lo que ha recibido
+           Bm               F#m
+Se ponga al servicio de los demás
+         G                    D
+Los dones no son para esconderlos
+       A               D
+Sino para el servicio están
+
+[Verso 2]
+D                    A          Bm
+Somos un cuerpo donde Cristo es cabeza
+G                 Em              A
+Y cada uno con diferente función
+D                    A          Bm
+Cuerpo de Cristo somos por el bautismo
+G            Em        A
+Y todos vamos hacia la santidad`
+},
+
 ]; // END SONGS
 
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
+ensureDefaultPlaylists();
 buildSongList();
 
 // ── Sidebar móvil

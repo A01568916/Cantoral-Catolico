@@ -1,7 +1,7 @@
 {
-  "name": "Cantoral RiseUp 2026",
-  "short_name": "Cantoral",
-  "description": "Cantoral de canciones para retiro Regnum Christi RiseUp 2026",
+  "name": "Cantoral Evangelium",
+  "short_name": "Evangelium",
+  "description": "Cantoral de canciones católicas — letra y acordes",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
